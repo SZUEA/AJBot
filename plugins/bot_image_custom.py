@@ -26,7 +26,7 @@ blockGroupNumber = []
 # 表情太多时二维码可能装不下扫不出来，请自行制作或者删去 resources/list.jpg 即关闭查询表情列表图（qrListOpen 也要关闭）
 qrListOpen = True
 # 表情包字体
-fontPath = f"{RESOURCES_BASE_PATH}/font/simhei.ttf"
+fontPath = f"{RESOURCES_BASE_PATH}/font/simhei-emoji.ttf"
 # 最小字体限制
 fontMin = 15
 
@@ -151,7 +151,7 @@ class Tools:
 
 def mainEntrance(msg, userQQ, userGroup, bot):
     pictureListCommand = ["img list"]
-    primaryMatchingSuffix = [".jpg", ".JPG"]
+    primaryMatchingSuffix = [".jpg", ".JPG", '。jpg', '。JPG']
     switchEmojiCommandPrefix = ["img "]
     # Emoticon list function
     if Tools.commandMatch(msg, pictureListCommand, Model.ALL):
