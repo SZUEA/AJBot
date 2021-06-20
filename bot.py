@@ -1,8 +1,11 @@
+import os
+
 from botoy import Botoy, jconfig, GroupMsg
 from botoy.decorators import equal_content, ignore_botself
 from botoy.sugar import Text
 
 qq = jconfig.qq
+os.environ["BOTQQ"] = str(qq)
 bot = Botoy(qq=qq, use_plugins=True)
 
 
