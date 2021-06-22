@@ -50,7 +50,10 @@ class RegReply(Reply):
     """
 
     def check(self, rule: str, message: str):
-        return re.search(rule, message) is not None
+        try:
+            return re.search(rule, message) is not None
+        except Exception as e:
+            return False
 
 
 class PreReply(Reply):
