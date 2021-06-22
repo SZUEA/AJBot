@@ -1,6 +1,6 @@
 import os
 
-from iotbot import Action, GroupMsg
+from botoy import Action, GroupMsg
 
 master = 550991679  # 只允许自己用
 
@@ -16,4 +16,4 @@ def receive_group_msg(ctx: GroupMsg):
         except Exception:
             msg = 'error'
         finally:
-            Action(ctx.CurrentQQ).send_group_text_msg(ctx.FromGroupId, content=msg)
+            Action(ctx.CurrentQQ).sendGroupText(ctx.FromGroupId, content=msg)
