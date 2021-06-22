@@ -167,7 +167,7 @@ def receive_group_msg(ctx: GroupMsg):
             _id = op.insert_reply_message(args[1], response, message_type,
                                           'pic', ctx.FromGroupId, pic_ctx.GroupPic[0].Url)
             add_response(_id, args[1], response, message_type, ctx.FromGroupId, 'pic', pic_ctx.GroupPic[0].Url)
-        sugar.Text(f"对关键词{args[1]}的回复添加成功")
+        sugar.Text(f"""对关键词"{args[1]}"的回复添加成功""")
         return
 
     if ctx.MsgType != 'TextMsg':
