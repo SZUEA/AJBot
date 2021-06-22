@@ -124,19 +124,15 @@ def receive_group_msg(ctx: GroupMsg):
         return
 
     if content.startswith('.') or content.startswith('。'):
-        if not is_bot_master(ctx.CurrentQQ, ctx.FromUserId):
-            return
+        isAdmin = is_bot_master(ctx.CurrentQQ, ctx.FromUserId)
+
         content = content[1:]
-        if content == 'reload':
+        if content == 'reload' and isAdmin:
             cost = init_response()
             sugar.Text(f"关键词回复重载完毕，用时{str(cost)[:5]} s")
             return
         elif content.startswith('pre') or content.startswith('前缀'):
             message_type = 'PreReply'
-        elif content.startswith('re') or content.startswith('正则'):
-            message_type = 'RegReply'
-        elif content.startswith('con') or content.startswith('包含'):
-            message_type = 'ContainReply'
         elif content.startswith('eq') or content.startswith('全等') or content.startswith('等于') \
                 or content.startswith('reply'):
             message_type = 'EqualReply'
@@ -148,10 +144,17 @@ def receive_group_msg(ctx: GroupMsg):
                 if reply.match(args[1], ctx.FromGroupId):
                     reply.remove()
                     response_list.remove(reply)
-            sugar.Text(f"对关键词{args[1]}的回复已删除")
+            sugar.Text(f"对关键词\"{args[1]}\"的回复已删除")
             return
+        elif not isAdmin:
+            return
+        elif content.startswith('re') or content.startswith('正则'):
+            message_type = 'RegReply'
+        elif content.startswith('con') or content.startswith('包含'):
+            message_type = 'ContainReply'
         else:
             return
+
         args = content.split(' ')
         if len(args) < 2:
             sugar.Text("参数不足")
