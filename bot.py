@@ -21,7 +21,7 @@ def on_group_msg(ctx: GroupMsg):
     if ctx.FromUserId != jconfig.master:
         return
     if ctx.Content == '刷新插件':
-        bot.plugMgr.refresh_plugins()
+        bot.plugMgr.reload_plugins()
 
         # 语法糖
         sugar.Text("~~所有插件刷新完毕")
