@@ -12,6 +12,13 @@ class DB:
         self.cursor = self.db.cursor()
         self.create()
 
+        def dict_factory(cursor, row):
+            d = {}
+            for idx, col in enumerate(cursor.description):
+                d[col[0]] = row[idx]
+            return d
+        self.cursor.row_factory = dict_factory
+
     def create(self):
         self.cursor.execute(
             """
@@ -25,7 +32,7 @@ class DB:
         self.cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS `reply_message` (
-                `id` bigint(20) primary key ,
+                `id` integer PRIMARY KEY autoincrement ,
               `rules` text,
               `response` text,
               `rule_type` varchar(40)  NOT NULL,
