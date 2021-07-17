@@ -51,10 +51,10 @@ def zhibo():
 
 
 def jinyan(switch):
-    action.shutAllUp(
-        903278109,
-        switch=switch
-    )
+    # action.shutAllUp(
+    #     903278109,
+    #     switch=switch
+    # )
     if switch == 1:
         action.sendGroupText(
             903278109,
@@ -67,7 +67,7 @@ def jinyan(switch):
         )
 
 
-scheduler.add_job(zhibo, "cron", hour=19, minute=55)
+scheduler.add_job(zhibo, "cron", hour=19, minute=00)
 scheduler.add_job(jinyan, "cron", hour=0, minute=59, args=(1,))
 scheduler.add_job(jinyan, "cron", hour=6, minute=30, args=(0,))
 
