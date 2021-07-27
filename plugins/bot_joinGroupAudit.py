@@ -549,6 +549,8 @@ def receive_group_msg(ctx: GroupMsg):
 
 
 def receive_events(ctx: EventMsg):
+    if True:
+        return
     join_data = ep.group_join(ctx)
     if join_data is None:
         return
