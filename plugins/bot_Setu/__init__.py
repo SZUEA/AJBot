@@ -52,7 +52,8 @@ def check_and_processing(ctx: Union[GroupMsg, FriendMsg]) -> Union[GetSetuConfig
 @deco.ignore_botself
 @deco.queued_up
 def receive_group_msg(ctx: GroupMsg):
-    if config := check_and_processing(ctx):
+    config = check_and_processing(ctx)
+    if config is not None:
         setu = Setu(ctx, config)
         setu.main()
         del setu
@@ -63,7 +64,8 @@ def receive_group_msg(ctx: GroupMsg):
 @deco.ignore_botself
 @deco.queued_up
 def receive_friend_msg(ctx: FriendMsg):
-    if config := check_and_processing(ctx):
+    config = check_and_processing(ctx)
+    if config is not None:
         setu = Setu(ctx, config)
         setu.main()
         del setu
