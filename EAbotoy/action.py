@@ -4,7 +4,7 @@ import threading
 import time
 import traceback
 import uuid
-from etyping import List, Optional, Union
+from typing import List, Optional, Union
 
 import httpx
 
@@ -20,7 +20,7 @@ from . import utils
 class Action:
     def __init__(
         self,
-        qq: Optional[int] = None,
+        wxid: Optional[str] = None,
         port: Optional[int] = None,
         host: Optional[str] = None,
         timeout: int = 20,
@@ -29,7 +29,7 @@ class Action:
         self.port = port or jconfig.port
         self.address = utils.to_address(self.host, self.port)
 
-        self._qq = int(qq or jconfig.wxid or 0)
+        self._wxid = wxid or jconfig.wxid or ""
 
         self.c = httpx.Client(
             headers={"Content-Type": "application/json"},
@@ -41,9 +41,9 @@ class Action:
 
     @property
     def qq(self) -> int:
-        if self._qq == 0:
-            self._qq = self.getAllBots()[0]
-        return self._qq
+        if self._wxid == 0:
+            self._wxid = self.getAllBots()[0]
+        return self._wxid
 
     @classmethod
     def from_ctx(

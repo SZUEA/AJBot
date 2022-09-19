@@ -11,7 +11,7 @@ import threading
 import traceback
 import weakref
 from concurrent import futures
-from etyping import Optional
+from typing import Optional
 
 from .log import logger
 

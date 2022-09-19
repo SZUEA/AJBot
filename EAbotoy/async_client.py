@@ -3,7 +3,7 @@ import asyncio
 import copy
 import random
 import traceback
-from etyping import Optional, Union
+from typing import Optional, Union
 
 import socketio
 from socketio.exceptions import ConnectionError as SioConnectionError

@@ -1,4 +1,4 @@
-from etyping import Optional
+from typing import Optional
 
 from EAbotoy.exceptions import InvalidConfigError
 

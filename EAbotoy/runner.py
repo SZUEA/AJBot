@@ -7,7 +7,7 @@ import textwrap
 import time
 from functools import lru_cache
 from pathlib import Path
-from etyping import Union
+from typing import Union
 
 import colorama
 

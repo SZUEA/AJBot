@@ -35,7 +35,7 @@ if qrListOpen:
 # ==========================================
 
 
-bot = Action(int(os.getenv("BOTQQ")))
+bot = Action(os.getenv("wxid"))
 
 
 @ignore_botself

@@ -11,7 +11,7 @@ curFileDir = Path(__file__).absolute().parent  # 当前文件路径
 with open(curFileDir.parent / "EAbotoy.json", "r", encoding="utf-8") as f:
     botConf = json.load(f)
 
-action = Action(qq=botConf["bot"], host=botConf["host"], port=botConf["port"])
+action = Action(wxid=botConf["bot"], host=botConf["host"], port=botConf["port"])
 
 
 class MsgShow(BaseModel):

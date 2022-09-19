@@ -44,7 +44,7 @@ hitokotoArchiveOpen = True
 
 bot = Action(
     # 注意更换您的 bot.py 文件为最新
-    int(os.getenv("BOTQQ")),
+    os.getenv("wxid"),
 )
 
 

@@ -3,3 +3,5 @@ pillow
 aiofiles
 qrcode
 pydantic
+py-cpuinfo
+psutil

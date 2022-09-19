@@ -6,7 +6,7 @@ from EAbotoy.model import GroupMsg
 
 @functools.lru_cache(520)
 def __get_group_admins(qq, host, port, group):
-    admins = Action(qq=qq, port=port, host=host).getGroupAdminList(group, True)
+    admins = Action(wxid=qq, port=port, host=host).getGroupAdminList(group, True)
     return [admin["MemberUin"] for admin in admins]
 
 
