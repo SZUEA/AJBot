@@ -105,7 +105,7 @@ def install_plugin(src: str, name: Optional[str], data: dict):
 
     # 路径链接，可能是文件夹，可能是文件
     # 文件
-    # https://github.com/opq-osc/botoy-plugins/blob/master/plugins/bot_TaoShow.py
+    # https://github.com/opq-osc/EAbotoy-plugins/blob/master/plugins/bot_TaoShow.py
     if "/blob/" in src:
         raw_url = src.replace("/blob/", "/raw/")
         filename = src.split("/")[-1]
@@ -137,7 +137,7 @@ def install_plugin(src: str, name: Optional[str], data: dict):
         return
 
     # 文件夹
-    # https://github.com/opq-osc/botoy-plugins/tree/master/plugins/bot_weirdfonts
+    # https://github.com/opq-osc/EAbotoy-plugins/tree/master/plugins/bot_weirdfonts
     if "/tree/" in src:
         try:
             owner: str

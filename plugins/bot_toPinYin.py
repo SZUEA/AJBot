@@ -1,10 +1,10 @@
 """汉字转拼音：拼音{汉字}"""
 import httpx
 import requests
-from botoy import GroupMsg
-from botoy.collection import MsgTypes
-from botoy.decorators import ignore_botself, startswith, these_msgtypes
-from botoy.sugar import Text
+from EAbotoy import GroupMsg
+from EAbotoy.collection import MsgTypes
+from EAbotoy.decorators import ignore_botself, startswith, these_msgtypes
+from EAbotoy.sugar import Text
 
 
 @ignore_botself

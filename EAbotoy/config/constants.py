@@ -20,4 +20,4 @@ DEFAULT_WEBHOOK = False
 DEFAULT_WEBHOOK_POST_URL = "http://127.0.0.1:5000"
 DEFAULT_WEBHOOK_TIMEOUT = 20
 
-CONFIG_FILE_PATH = Path.cwd() / "botoy.json"
+CONFIG_FILE_PATH = Path.cwd() / "EAbotoy.json"

@@ -1,8 +1,8 @@
-# botoy-plugins
+# EAbotoy-plugins
 
 # 配置
 
-新建`botoy.json`文件进行配置
+新建`EAbotoy.json`文件进行配置
 
 ```json
 {
@@ -17,7 +17,7 @@
 
 ```shell
 pip install -r requirements.txt
-botoy run
+EAbotoy run
 ```
 
 # LICENSE

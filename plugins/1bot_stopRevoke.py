@@ -3,11 +3,11 @@ import sqlite3
 import time
 from collections import defaultdict
 
-from botoy import Action, EventMsg, GroupMsg, jconfig
-from botoy.collection import MsgTypes
-from botoy.contrib import get_cache_dir
-from botoy.decorators import ignore_botself, these_msgtypes
-from botoy.parser import event as ep
+from EAbotoy import Action, EventMsg, GroupMsg, jconfig
+from EAbotoy.collection import MsgTypes
+from EAbotoy.contrib import get_cache_dir
+from EAbotoy.decorators import ignore_botself, these_msgtypes
+from EAbotoy.parser import event as ep
 
 db_cache_dir = get_cache_dir("for_stop_revoke_plugin")
 

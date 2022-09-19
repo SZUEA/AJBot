@@ -1,11 +1,11 @@
 """吹某个人的牛皮 使用: 艾特一个人并发送文字nb"""
 import random
 
-from botoy import GroupMsg
-from botoy.collection import MsgTypes
-from botoy.decorators import ignore_botself, these_msgtypes
-from botoy.parser import group as gp
-from botoy.sugar import Text
+from EAbotoy import GroupMsg
+from EAbotoy.collection import MsgTypes
+from EAbotoy.decorators import ignore_botself, these_msgtypes
+from EAbotoy.parser import group as gp
+from EAbotoy.sugar import Text
 
 
 def get_niubi(name):

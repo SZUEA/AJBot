@@ -6,10 +6,10 @@
 import base64
 import io
 
-from botoy import GroupMsg
-from botoy.contrib import get_cache_dir
-from botoy.decorators import ignore_botself, queued_up
-from botoy.sugar import Picture
+from EAbotoy import GroupMsg
+from EAbotoy.contrib import get_cache_dir
+from EAbotoy.decorators import ignore_botself, queued_up
+from EAbotoy.sugar import Picture
 from PIL import Image, ImageDraw, ImageFont
 
 LEFT_PART_VERTICAL_BLANK_MULTIPLY_FONT_HEIGHT = 2
@@ -33,7 +33,7 @@ if not FONT_PATH.exists():
     try:
         with httpx.stream(
             "GET",
-            "https://github.com/opq-osc/botoy-plugins/releases/download/phlogo%E6%89%80%E9%9C%80%E5%AD%97%E4%BD%93/ArialEnUnicodeBold.ttf",
+            "https://github.com/opq-osc/EAbotoy-plugins/releases/download/phlogo%E6%89%80%E9%9C%80%E5%AD%97%E4%BD%93/ArialEnUnicodeBold.ttf",
         ) as resp:
             print("连接字体资源成功")
             total_size = int(resp.headers["content-length"])

@@ -2,8 +2,8 @@ import gc
 import re
 from typing import Union
 
-from botoy import FriendMsg, GroupMsg, S
-from botoy import decorators as deco
+from EAbotoy import FriendMsg, GroupMsg, S
+from EAbotoy import decorators as deco
 
 from .model import GetSetuConfig
 from .setu import Setu

@@ -1,14 +1,15 @@
 import json
 import os
 
-from botoy import Botoy, jconfig, GroupMsg, Action, sugar, FriendMsg
-from botoy.schedule import scheduler
+from EAbotoy import Botoy, jconfig, GroupMsg, Action, sugar, FriendMsg
+from EAbotoy.schedule import scheduler
 
 from plugins.bot_reply import is_bot_master
 
-qq = jconfig.qq
-os.environ["BOTQQ"] = str(qq)
-bot = Botoy(qq=qq, use_plugins=True)
+wxid = jconfig.wxid
+os.environ["wxid"] = str(wxid)
+bot = Botoy(wxid=wxid, use_plugins=True)
+
 
 @bot.group_context_use
 def group_ctx_middleware(ctx: GroupMsg):
@@ -33,6 +34,7 @@ def friend_ctx_middleware(ctx: FriendMsg):
         ctx.type = "friend"  # 好友会话
         ctx.QQG = 0
     return ctx
+
 
 @bot.group_context_use
 def group_mid(ctx):
@@ -64,7 +66,7 @@ def on_group_msg(ctx: GroupMsg):
         sugar.Text(res)
 
 
-action = Action(qq, host=jconfig.host, port=jconfig.port)
+action = Action(wxid, host=jconfig.host, port=jconfig.port)
 
 
 def zhibo():

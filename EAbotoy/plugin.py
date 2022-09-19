@@ -18,7 +18,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import colorama
 from prettytable import PrettyTable
 
-from .typing import T_EventReceiver, T_FriendMsgReceiver, T_GroupMsgReceiver
+from .etyping import T_EventReceiver, T_FriendMsgReceiver, T_GroupMsgReceiver
 
 
 def resolve_plugin_name(name: str) -> str:

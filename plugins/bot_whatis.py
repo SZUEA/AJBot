@@ -1,8 +1,8 @@
 """查询缩写意思, 格式: 查询+{缩写} 或 查询"""
 import httpx
-from botoy.collection import MsgTypes
-from botoy.decorators import ignore_botself, startswith, these_msgtypes
-from botoy.session import SessionHandler, ctx, session
+from EAbotoy.collection import MsgTypes
+from EAbotoy.decorators import ignore_botself, startswith, these_msgtypes
+from EAbotoy.session import SessionHandler, ctx, session
 
 
 def whatis(text):

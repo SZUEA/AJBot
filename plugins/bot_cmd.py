@@ -1,6 +1,6 @@
 import os
 
-from botoy import Action, GroupMsg
+from EAbotoy import Action, GroupMsg
 
 master = 550991679  # 只允许自己用
 

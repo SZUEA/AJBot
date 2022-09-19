@@ -2,7 +2,7 @@ import json
 import re
 from pathlib import Path
 
-from botoy import GroupMsg, S, jconfig
+from EAbotoy import GroupMsg, S, jconfig
 from loguru import logger
 
 from ..bot_Setu.dataBase import getGroupConfig

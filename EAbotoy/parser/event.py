@@ -1,4 +1,4 @@
-from typing import Optional
+from etyping import Optional
 
 from pydantic import BaseModel
 

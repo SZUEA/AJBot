@@ -1,9 +1,9 @@
 """生成给女朋友道歉信. 格式：给女朋友道歉{名}|{事情} 或 直接发送 给女朋友道歉 (接受私聊)"""
 import random
 
-from botoy.collection import MsgTypes
-from botoy.decorators import ignore_botself, startswith, these_msgtypes
-from botoy.session import SessionHandler, ctx, session
+from EAbotoy.collection import MsgTypes
+from EAbotoy.decorators import ignore_botself, startswith, these_msgtypes
+from EAbotoy.session import SessionHandler, ctx, session
 
 nickname = [
     "宝贝name，",

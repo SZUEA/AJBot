@@ -1,6 +1,6 @@
-from typing import Optional
+from etyping import Optional
 
-from botoy.exceptions import InvalidConfigError
+from EAbotoy.exceptions import InvalidConfigError
 
 
 def dict2tree(data: dict) -> dict:

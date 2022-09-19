@@ -2,10 +2,10 @@
 import json
 from typing import Dict, List
 
-from botoy.collection import MsgTypes
-from botoy.exceptions import InvalidContextError
-from botoy.model import GroupMsg
-from botoy.refine import _copy_ctx
+from EAbotoy.collection import MsgTypes
+from EAbotoy.exceptions import InvalidContextError
+from EAbotoy.model import GroupMsg
+from EAbotoy.refine import _copy_ctx
 
 
 class _GroupMsg(GroupMsg):

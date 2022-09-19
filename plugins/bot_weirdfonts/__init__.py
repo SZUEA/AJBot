@@ -4,10 +4,10 @@
 """
 import json
 
-from botoy.collection import MsgTypes
-from botoy.contrib import get_cache_dir
-from botoy.decorators import ignore_botself, startswith, these_msgtypes
-from botoy.session import SessionHandler, ctx, session
+from EAbotoy.collection import MsgTypes
+from EAbotoy.contrib import get_cache_dir
+from EAbotoy.decorators import ignore_botself, startswith, these_msgtypes
+from EAbotoy.session import SessionHandler, ctx, session
 
 from .internal import convert, font_names, get_font, get_font_styles
 

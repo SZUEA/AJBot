@@ -1,7 +1,7 @@
 import httpx
 
-from botoy import EventMsg, FriendMsg, GroupMsg, jconfig
-from botoy.log import logger
+from EAbotoy import EventMsg, FriendMsg, GroupMsg, jconfig
+from EAbotoy.log import logger
 
 # 以内置插件方式实现简单的webhook，将原始数据上报至指定地址
 # 因为webhook功能只能通过配置文件开启，所以直接新建Config, 读取配置文件即可

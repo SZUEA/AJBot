@@ -60,7 +60,7 @@
 
 格式：5000 {上部文字} {下部文字} {下部文字向右的额外偏移量(可选)}
 
-`botoy.json`配置及默认值:
+`EAbotoy.json`配置及默认值:
 
 - `5000choyen_api`: [图片生成服务端](https://github.com/fz6m/5000choyen-server)接口地址
 
@@ -104,7 +104,7 @@
 
 自动撤回插件
 
-`botoy.json`配置项：
+`EAbotoy.json`配置项：
 
 ```json
 {
@@ -136,7 +136,7 @@
 
 解码: 瞎叫啥+{瞎叫字符串}
 
-`botoy.json`配置及默认值:
+`EAbotoy.json`配置及默认值:
 
 瞎叫词库
 

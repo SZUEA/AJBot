@@ -3,14 +3,14 @@ import asyncio
 import copy
 import random
 import traceback
-from typing import Optional, Union
+from etyping import Optional, Union
 
 import socketio
 from socketio.exceptions import ConnectionError as SioConnectionError
 
-from botoy.client import Botoy
-from botoy.log import logger
-from botoy.model import EventMsg, FriendMsg, GroupMsg
+from EAbotoy.client import Botoy
+from EAbotoy.log import logger
+from EAbotoy.model import EventMsg, FriendMsg, GroupMsg
 
 
 class AsyncBotoy(Botoy):

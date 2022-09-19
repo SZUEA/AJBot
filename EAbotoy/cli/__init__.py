@@ -32,35 +32,35 @@ def getchar(msg: str = "", choices: List[str] = [], echo: bool = False):
 
 @click.group()
 def cli():
-    """botoy 脚手架
+    """EAbotoy 脚手架
 
     使用示例:
 
     1. 生成主体文件
-    $ botoy init
+    $ EAbotoy init
 
     生成主体文件, 文件名为bot, qq号为123456:
-    $ botoy init -n bot -q 123456
+    $ EAbotoy init -n bot -q 123456
 
     2. 生成插件
-    $ botoy add
+    $ EAbotoy add
 
     生成插件，名为test
-    $ botoy add -n test
+    $ EAbotoy add -n test
 
     生成插件，名为test, 只需要处理好友消息
-    $ botoy add -n test -f
+    $ EAbotoy add -n test -f
 
     生成插件，名为test, 需要处理好友消息, 群消息
-    $ botoy add -n test -f -g
+    $ EAbotoy add -n test -f -g
 
     可选项为-f -g -e 分别代表是否包含处理好友，群，事件，如果都不传，表示都要！
 
     3. 启动机器人(要求入口文件名为bot.py)
-    $ botoy run
+    $ EAbotoy run
 
     4. 测试连接
-    $ botoy test http://127.0.0.1:8888
+    $ EAbotoy test http://127.0.0.1:8888
     """
 
 
@@ -86,8 +86,8 @@ def init(name, qq, host, port):
     template = (
         textwrap.dedent(
             """
-        from botoy import Action, Botoy, EventMsg, FriendMsg, GroupMsg
-        from botoy import decorators as deco
+        from EAbotoy import Action, Botoy, EventMsg, FriendMsg, GroupMsg
+        from EAbotoy import decorators as deco
 
         qq = {qq}
         bot = Botoy(qq=qq, use_plugins={use_plugins})
@@ -123,7 +123,7 @@ def init(name, qq, host, port):
 
     # main
     confirm = click.confirm(
-        f"将生成 程序入口文件{name}.py 和 配置文件botoy.json, 这是覆盖写操作，是否继续?",
+        f"将生成 程序入口文件{name}.py 和 配置文件EAbotoy.json, 这是覆盖写操作，是否继续?",
         default=False,
         show_default=True,
     )
@@ -152,7 +152,7 @@ def init(name, qq, host, port):
         "webhook_post_url": "http://127.0.0.1:5000",
         "webhook_timeout": 20,
     }
-    with open("botoy.json", "w", encoding="utf8") as f:
+    with open("EAbotoy.json", "w", encoding="utf8") as f:
         json.dump(config, f, indent="  ")
 
     if plug:
@@ -161,7 +161,7 @@ def init(name, qq, host, port):
 
     if click.confirm("是否修改或生成.gitignore文件", default=False, show_default=True):
         ignore = "\n".join(
-            ["\n# Botoy", "botoy.json", "REMOVED_PLUGINS", "botoy-cache"]
+            ["\n# Botoy", "EAbotoy.json", "REMOVED_PLUGINS", "EAbotoy-cache"]
         )
         with open(".gitignore", "a" if os.path.exists(".gitignore") else "w") as f:
             f.write(ignore)
@@ -235,8 +235,8 @@ def add(name, friend, group, event):
         write_file = plugin_path_folder / "__init__.py"
 
     with open(write_file, "w", encoding="utf8") as f:
-        f.write("from botoy import {}".format(", ".join(imports)))
-        f.write("\nfrom botoy import decorators as deco")
+        f.write("from EAbotoy import {}".format(", ".join(imports)))
+        f.write("\nfrom EAbotoy import decorators as deco")
         f.write("\n\n")
         f.write("\n".join(receivers))
     echo("ok")

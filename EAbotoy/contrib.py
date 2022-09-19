@@ -18,7 +18,7 @@ from typing import Any, Awaitable, Callable, Dict, Optional, Union
 
 import httpx
 
-from .typing import T_GeneralReceiver
+from .etyping import T_GeneralReceiver
 
 __all__ = [
     "file_to_base64",
@@ -46,7 +46,7 @@ def get_cache_dir(dir_name: str) -> Path:
     """
     # 确定主缓存目录
     for i in os.listdir(Path(".")):
-        if i in ["botoy.json", "REMOVED_PLUGINS", "bot.py", "plugins"]:
+        if i in ["EAbotoy.json", "REMOVED_PLUGINS", "bot.py", "plugins"]:
             main_dir = Path(".")
             break
     else:
@@ -62,7 +62,7 @@ def get_cache_dir(dir_name: str) -> Path:
         else:
             main_dir = Path(".")
 
-    cache_dir = main_dir / "botoy-cache"
+    cache_dir = main_dir / "EAbotoy-cache"
     if not cache_dir.exists():
         cache_dir.mkdir()
 

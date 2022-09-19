@@ -1,5 +1,5 @@
-from botoy import FriendMsg, GroupMsg
-from botoy import decorators as deco
+from EAbotoy import FriendMsg, GroupMsg
+from EAbotoy import decorators as deco
 
 from .command import CMD
 

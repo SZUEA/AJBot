@@ -2,13 +2,13 @@ import json
 from pathlib import Path
 from typing import Literal
 
-from botoy import Action
+from EAbotoy import Action
 from loguru import logger
 from pydantic import BaseModel
 
 curFileDir = Path(__file__).absolute().parent  # 当前文件路径
 
-with open(curFileDir.parent / "botoy.json", "r", encoding="utf-8") as f:
+with open(curFileDir.parent / "EAbotoy.json", "r", encoding="utf-8") as f:
     botConf = json.load(f)
 
 action = Action(qq=botConf["bot"], host=botConf["host"], port=botConf["port"])

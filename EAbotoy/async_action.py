@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 
 import httpx
 
-from botoy.parser import event as eventParser
+from EAbotoy.parser import event as eventParser
 
 from . import macro, utils
 from .config import jconfig
@@ -26,7 +26,7 @@ class AsyncAction:
         self.port = port or jconfig.port
         self.address = utils.to_address(self.host, self.port)
 
-        self._qq = int(qq or jconfig.qq or 0)
+        self._qq = int(qq or jconfig.wxid or 0)
 
         self.c = httpx.AsyncClient(
             headers={"Content-Type": "application/json"},

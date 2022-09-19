@@ -2,11 +2,11 @@ from collections import defaultdict
 from queue import deque  # type:ignore
 from threading import Lock
 
-from botoy import GroupMsg
-from botoy import decorators as deco
-from botoy.collection import MsgTypes
-from botoy.parser import group as gp
-from botoy.sugar import Picture, Text
+from EAbotoy import GroupMsg
+from EAbotoy import decorators as deco
+from EAbotoy.collection import MsgTypes
+from EAbotoy.parser import group as gp
+from EAbotoy.sugar import Picture, Text
 
 # 自动消息加一功能, 支持文字消息和图片消息
 

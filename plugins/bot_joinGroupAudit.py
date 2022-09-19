@@ -5,10 +5,10 @@ import time
 from threading import Lock
 from typing import Tuple
 
-from botoy import Action, EventMsg, GroupMsg
-from botoy.collection import MsgTypes
-from botoy.decorators import ignore_botself, these_msgtypes
-from botoy.parser import event as ep
+from EAbotoy import Action, EventMsg, GroupMsg
+from EAbotoy.collection import MsgTypes
+from EAbotoy.decorators import ignore_botself, these_msgtypes
+from EAbotoy.parser import event as ep
 from PIL import Image, ImageDraw, ImageFont
 
 # userID_groupID : code

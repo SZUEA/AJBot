@@ -12,9 +12,9 @@
 # pylint: disable=R0915
 import re
 
-from botoy import Action, GroupMsg, jconfig
-from botoy.schedule import scheduler
-from botoy.session import Prompt, SessionHandler, ctx, session
+from EAbotoy import Action, GroupMsg, jconfig
+from EAbotoy.schedule import scheduler
+from EAbotoy.session import Prompt, SessionHandler, ctx, session
 
 from .api import API
 from .db import DB

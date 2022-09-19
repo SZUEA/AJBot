@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import List, Union
 
 import httpx
-from botoy import FriendMsg, GroupMsg, S
+from EAbotoy import FriendMsg, GroupMsg, S
 from loguru import logger
 from retrying import retry
 

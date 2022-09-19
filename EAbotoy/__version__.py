@@ -14,7 +14,7 @@ def check_version(daemon=True):
             latest_version = V(
                 ElementTree.fromstring(
                     httpx.get(
-                        "https://pypi.org/rss/project/botoy/releases.xml", timeout=10
+                        "https://pypi.org/rss/project/EAbotoy/releases.xml", timeout=10
                     ).text
                 )
                 .find("channel")
@@ -43,7 +43,7 @@ def check_version(daemon=True):
 
                 try:
                     releases = httpx.get(
-                        "https://api.github.com/repos/opq-osc/botoy/releases",
+                        "https://api.github.com/repos/opq-osc/EAbotoy/releases",
                         timeout=10,
                     ).json()
                     needed_releases = []

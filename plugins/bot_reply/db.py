@@ -1,7 +1,7 @@
 import sqlite3
 from typing import List
 
-from botoy.contrib import get_cache_dir
+from EAbotoy.contrib import get_cache_dir
 
 DB_PATH = get_cache_dir("reply") / "myDB.sqlite3"
 

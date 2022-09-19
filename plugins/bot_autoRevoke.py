@@ -3,8 +3,8 @@ import random
 import re
 import time
 
-from botoy import Action, GroupMsg, jconfig
-from botoy.decorators import from_botself, in_content
+from EAbotoy import Action, GroupMsg, jconfig
+from EAbotoy.decorators import from_botself, in_content
 
 _KEYWORD = "revoke"
 

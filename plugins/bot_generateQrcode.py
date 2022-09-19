@@ -2,9 +2,9 @@
 import base64
 import io
 
-from botoy import GroupMsg
-from botoy.decorators import ignore_botself, startswith, these_msgtypes
-from botoy.sugar import Picture
+from EAbotoy import GroupMsg
+from EAbotoy.decorators import ignore_botself, startswith, these_msgtypes
+from EAbotoy.sugar import Picture
 
 try:
     import qrcode

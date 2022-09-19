@@ -5,9 +5,9 @@
 import random
 from base64 import b64decode, b64encode
 
-from botoy import GroupMsg, jconfig
-from botoy.decorators import ignore_botself
-from botoy.sugar import Text
+from EAbotoy import GroupMsg, jconfig
+from EAbotoy.decorators import ignore_botself
+from EAbotoy.sugar import Text
 
 b64_chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/="
 sep, zero_chars = (

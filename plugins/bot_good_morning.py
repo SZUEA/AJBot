@@ -5,9 +5,9 @@ import os
 import random
 from enum import Enum
 
-from botoy import Action, GroupMsg
-from botoy.collection import MsgTypes
-from botoy.decorators import ignore_botself, these_msgtypes
+from EAbotoy import Action, GroupMsg
+from EAbotoy.collection import MsgTypes
+from EAbotoy.decorators import ignore_botself, these_msgtypes
 from dateutil.parser import parse
 
 try:

@@ -1,6 +1,6 @@
 from typing import List, Literal, Union
 
-from botoy import FriendMsg, GroupMsg
+from EAbotoy import FriendMsg, GroupMsg
 from pydantic import BaseModel, Field
 
 

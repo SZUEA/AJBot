@@ -20,7 +20,7 @@ T = TypeVar("T")
 
 lock = threading.RLock()
 
-botoy_config = {
+EAbotoy_config = {
     "host": DEFAULT_HOST,
     "port": DEFAULT_PORT,
     "group_blacklist": DEFAULT_GROUP_BLACKLIST,
@@ -30,46 +30,46 @@ botoy_config = {
     "webhook_post_url": DEFAULT_WEBHOOK_POST_URL,
     "webhook_timeout": DEFAULT_WEBHOOK_TIMEOUT,
 }
-botoy_config_tree = dict2tree(botoy_config)
+EAbotoy_config_tree = dict2tree(EAbotoy_config)
 
 
-def read_botoy_config():
-    global botoy_config, botoy_config_tree
+def read_EAbotoy_config():
+    global EAbotoy_config, EAbotoy_config_tree
 
     with lock:
         try:
-            botoy_config.update(json.loads(CONFIG_FILE_PATH.read_text()))
+            EAbotoy_config.update(json.loads(CONFIG_FILE_PATH.read_text()))
         except FileNotFoundError:
             pass
 
-        botoy_config_tree = dict2tree(botoy_config)
+        EAbotoy_config_tree = dict2tree(EAbotoy_config)
 
 
-read_botoy_config()
+read_EAbotoy_config()
 
 
-def write_botoy_config():
+def write_EAbotoy_config():
     with lock:
         CONFIG_FILE_PATH.write_text(
-            json.dumps(botoy_config, ensure_ascii=False, indent=2), "utf8"
+            json.dumps(EAbotoy_config, ensure_ascii=False, indent=2), "utf8"
         )
 
 
-def update_botoy_config(key, value):
-    global botoy_config, botoy_config_tree
+def update_EAbotoy_config(key, value):
+    global EAbotoy_config, EAbotoy_config_tree
 
     with lock:
         if isinstance(value, type(...)):
             try:
-                del botoy_config[key]
+                del EAbotoy_config[key]
             except Exception:
                 pass
         else:
-            botoy_config[key] = value
+            EAbotoy_config[key] = value
 
-        botoy_config_tree = dict2tree(botoy_config)
+        EAbotoy_config_tree = dict2tree(EAbotoy_config)
 
-        write_botoy_config()
+        write_EAbotoy_config()
 
 
 class Configuration(Generic[V]):
@@ -103,7 +103,7 @@ class Configuration(Generic[V]):
         :param value: 配置值，特殊情况，当value类型为 `ellipsis` 也就是 `...`时表示删除该项配置
         """
         full_key = self._section and self._section + "." + key or key
-        update_botoy_config(full_key, value)
+        update_EAbotoy_config(full_key, value)
 
     def __getitem__(self, _: T) -> "Configuration[T]":
         return self  # type: ignore
@@ -133,7 +133,7 @@ class Configurations:
     def get_configuration(self, section: Optional[str] = None) -> Configuration:
         """获取一个该sectoin的配置对象"""
         try:
-            config_tree = lookup(botoy_config_tree, section)
+            config_tree = lookup(EAbotoy_config_tree, section)
         except KeyError:
             config_tree = {}
         return Configuration(config_tree, section)
@@ -141,20 +141,20 @@ class Configurations:
     # 兼容旧版API
     def get(self, key: str, default=None):
         """配置文件作为字典，此方法等于字典的get方法"""
-        return botoy_config.get(key, default)
+        return EAbotoy_config.get(key, default)
 
     def __getitem__(self, key: str):
-        return botoy_config.get(key)
+        return EAbotoy_config.get(key)
 
     def __getattr__(self, key: str):
-        return botoy_config.get(key)
+        return EAbotoy_config.get(key)
 
     ############
 
     def __repr__(self):
         return "Configurations(\n  data=%s\n  tree=%s\n)" % (
-            botoy_config,
-            botoy_config_tree,
+            EAbotoy_config,
+            EAbotoy_config_tree,
         )
 
 

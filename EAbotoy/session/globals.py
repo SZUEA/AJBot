@@ -1,5 +1,5 @@
 from contextvars import ContextVar
-from typing import Union
+from etyping import Union
 
 from ..model import FriendMsg, GroupMsg
 from ..utils import bind_contextvar

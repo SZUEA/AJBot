@@ -1,8 +1,8 @@
 # pylint: disable=R0902,W0231
-from botoy.collection import EventNames
-from botoy.exceptions import InvalidContextError
-from botoy.model import EventMsg
-from botoy.refine import _copy_ctx
+from EAbotoy.collection import EventNames
+from EAbotoy.exceptions import InvalidContextError
+from EAbotoy.model import EventMsg
+from EAbotoy.refine import _copy_ctx
 
 
 class _EventMsg(EventMsg):

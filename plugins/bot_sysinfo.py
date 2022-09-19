@@ -4,8 +4,8 @@ import time
 
 import cpuinfo
 import psutil
-from botoy import decorators as deco
-from botoy.sugar import Text
+from EAbotoy import decorators as deco
+from EAbotoy.sugar import Text
 
 
 def get_cpu_info():

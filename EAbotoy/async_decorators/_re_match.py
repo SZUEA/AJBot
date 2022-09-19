@@ -1,5 +1,5 @@
 import re
-from typing import Union
+from etyping import Union
 
 from ..model import FriendMsg, GroupMsg
 

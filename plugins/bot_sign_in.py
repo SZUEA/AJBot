@@ -8,9 +8,9 @@ from enum import Enum
 from io import BytesIO
 
 import httpx
-from botoy import Action, GroupMsg
-from botoy.decorators import ignore_botself, these_msgtypes
-from botoy.collection import MsgTypes
+from EAbotoy import Action, GroupMsg
+from EAbotoy.decorators import ignore_botself, these_msgtypes
+from EAbotoy.collection import MsgTypes
 from dateutil.parser import parse
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 

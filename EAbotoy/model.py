@@ -1,7 +1,7 @@
 # pylint: disable=too-many-instance-attributes
 import warnings
 from re import Match
-from typing import Optional
+from etyping import Optional
 
 
 class GroupMsg:

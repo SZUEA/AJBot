@@ -1,4 +1,4 @@
-from botoy import jconfig
+from EAbotoy import jconfig
 from httpx_socks import SyncProxyTransport
 
 if proxies_socks := jconfig.proxies_socks:

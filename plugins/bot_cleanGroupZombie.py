@@ -2,14 +2,14 @@
 import time
 from datetime import datetime
 
-from botoy.collection import MsgTypes
-from botoy.decorators import (
+from EAbotoy.collection import MsgTypes
+from EAbotoy.decorators import (
     from_admin,
     ignore_botself,
     startswith,
     these_msgtypes
 )
-from botoy.session import SessionHandler, ctx, session
+from EAbotoy.session import SessionHandler, ctx, session
 
 zombie_handler = SessionHandler(
     ignore_botself,

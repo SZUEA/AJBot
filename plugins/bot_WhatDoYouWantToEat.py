@@ -3,11 +3,11 @@ import os
 import random
 import re
 
-from botoy import GroupMsg
-from botoy.collection import MsgTypes
-from botoy.contrib import get_cache_dir
-from botoy.decorators import ignore_botself, on_regexp, these_msgtypes
-from botoy.sugar import Picture
+from EAbotoy import GroupMsg
+from EAbotoy.collection import MsgTypes
+from EAbotoy.contrib import get_cache_dir
+from EAbotoy.decorators import ignore_botself, on_regexp, these_msgtypes
+from EAbotoy.sugar import Picture
 
 recipe_dir = get_cache_dir("what do you want to eat")
 

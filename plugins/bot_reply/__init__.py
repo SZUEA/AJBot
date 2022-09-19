@@ -2,10 +2,10 @@ import re
 import time
 from random import randrange
 
-from botoy import Action, GroupMsg, sugar
-from botoy.refine import refine_pic_group_msg
+from EAbotoy import Action, GroupMsg, sugar
+from EAbotoy.refine import refine_pic_group_msg
 
-from botoy.decorators import ignore_botself
+from EAbotoy.decorators import ignore_botself
 from .db import DB, is_bot_master
 
 

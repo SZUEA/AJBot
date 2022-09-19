@@ -16,7 +16,7 @@ from .log import logger, logger_init
 from .model import EventMsg, FriendMsg, GroupMsg
 from .plugin import PluginManager
 from .pool import WorkerPool
-from .typing import (
+from .etyping import (
     T_EventMiddleware,
     T_EventReceiver,
     T_FriendMsgMiddleware,
@@ -40,7 +40,7 @@ from .utils import check_schema, sync_run, to_address
 
 class Botoy:
     """
-    :param qq: 机器人QQ号(多Q就传qq号列表), 如果不传则会监听服务端传过来的所有机器人的
+    :param wxid: 机器人QQ号(多Q就传qq号列表), 如果不传则会监听服务端传过来的所有机器人的
                 所有信息，如果传了，则只会接收对应机器人的信息. 0会被忽略，相当于没传
     :param use_plugins: 是否开启插件功能, 默认``False``
     :param port: 运行端口, 默认为``8888``
@@ -69,7 +69,7 @@ class Botoy:
     def __init__(
         self,
         *,
-        qq: Optional[Union[int, List[int]]] = None,
+        wxid: Optional[Union[str, List[str]]] = None,
         use_plugins: Optional[bool] = False,
         port: Optional[int] = None,
         host: Optional[str] = None,
@@ -79,14 +79,14 @@ class Botoy:
         log: bool = True,
         log_file: bool = False,
     ):
-        if qq is not None:
-            if not isinstance(qq, str) and isinstance(qq, Sequence):
-                self.qq = list(qq)
+        if wxid is not None:
+            if not isinstance(wxid, str) and isinstance(wxid, Sequence):
+                self.wxid = list(wxid)
             else:
-                self.qq = [qq]  # type: ignore
+                self.wxid = [wxid]  # type: ignore
         else:
-            self.qq = []
-        self.qq: List[int] = [int(qq) for qq in self.qq if int(qq) != 0]
+            self.wxid = []
+        self.wxid: List[str] = [str(qq) for qq in self.wxid if str(qq) != ""]
 
         self.host = check_schema(host or jconfig.host)
         self.port = int(port or jconfig.port)
@@ -161,7 +161,7 @@ class Botoy:
         return
 
     def _context_checker(self, context: Union[FriendMsg, GroupMsg, EventMsg]):
-        if self.qq and context.CurrentQQ not in self.qq:
+        if self.wxid and context.CurrentQQ not in self.wxid:
             return
 
         logger.info(f"{context.__class__.__name__} ->  {context.data}")
@@ -329,7 +329,7 @@ class Botoy:
                 self._when_connected_do = None
 
         for func in self.plugMgr.when_connected_funcs:
-            self._pool.submit(func, self.qq, self.host, self.port)
+            self._pool.submit(func, self.wxid, self.host, self.port)
 
     def _disconnect(self):
         logger.warning("Disconnected to the server!")
@@ -340,7 +340,7 @@ class Botoy:
                 self._when_disconnected_do = None
 
         for func in self.plugMgr.when_disconnected_funcs:
-            self._pool.submit(func, self.qq, self.host, self.port)
+            self._pool.submit(func, self.wxid, self.host, self.port)
 
     ########################################################################
     # 开放出来的用于多种连接方式的入口函数

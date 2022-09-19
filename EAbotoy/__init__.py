@@ -1,6 +1,6 @@
 """
 ============================================
-= Github: https://github.com/opq-osc/botoy =
+= Github: https://github.com/opq-osc/EAbotoy =
 ============================================
 """
 from .__version__ import check_version

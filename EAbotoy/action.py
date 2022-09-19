@@ -4,15 +4,15 @@ import threading
 import time
 import traceback
 import uuid
-from typing import List, Optional, Union
+from etyping import List, Optional, Union
 
 import httpx
 
-from botoy import macro
-from botoy.config import jconfig
-from botoy.log import logger
-from botoy.model import EventMsg, FriendMsg, GroupMsg
-from botoy.parser import event as eventParser
+from EAbotoy import macro
+from EAbotoy.config import jconfig
+from EAbotoy.log import logger
+from EAbotoy.model import EventMsg, FriendMsg, GroupMsg
+from EAbotoy.parser import event as eventParser
 
 from . import utils
 
@@ -29,7 +29,7 @@ class Action:
         self.port = port or jconfig.port
         self.address = utils.to_address(self.host, self.port)
 
-        self._qq = int(qq or jconfig.qq or 0)
+        self._qq = int(qq or jconfig.wxid or 0)
 
         self.c = httpx.Client(
             headers={"Content-Type": "application/json"},

@@ -1,7 +1,7 @@
 import functools
 
-from botoy.action import Action
-from botoy.model import GroupMsg
+from EAbotoy.action import Action
+from EAbotoy.model import GroupMsg
 
 
 @functools.lru_cache(520)
