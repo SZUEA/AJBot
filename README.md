@@ -6,9 +6,18 @@
 
 ```json
 {
-  "qq": "机器人qq号",
-  "master": "你的QQ号"
+  "host": "http://127.0.0.1",
+  "port": 8888,
+  "wxid": "机器人wxid号",
+  "master": "你的wxid号",
+  "group_blacklist": [],
+  "friend_blacklist": [],
+  "blocked_users": [],
+  "webhook": false,
+  "webhook_post_url": "http://127.0.0.1:5000",
+  "webhook_timeout": 20
 }
+
 ```
 
 # 运行
