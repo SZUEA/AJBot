@@ -11,7 +11,7 @@ from EAbotoy.parser import event as eventParser
 from . import macro, utils
 from .config import jconfig
 from .log import logger
-from .model import EventMsg, FriendMsg, GroupMsg
+from .model import EventMsg, WeChatMsg
 
 
 class AsyncAction:
@@ -43,10 +43,10 @@ class AsyncAction:
 
     @classmethod
     def from_ctx(
-        cls, ctx: Union[EventMsg, FriendMsg, GroupMsg], timeout: int = 20
+        cls, ctx: Union[EventMsg, WeChatMsg], timeout: int = 20
     ) -> "AsyncAction":
         return cls(
-            ctx.CurrentQQ,
+            ctx.CurrentWxid,
             host=getattr(ctx, "_host", None),
             port=getattr(ctx, "_port", None),
             timeout=timeout,
@@ -744,7 +744,7 @@ class AsyncAction:
             "RevokeMsg", {"GroupID": group, "MsgSeq": msgSeq, "MsgRandom": msgRandom}
         )
 
-    async def revoke(self, ctx: GroupMsg):
+    async def revoke(self, ctx: WeChatMsg):
         """撤回群消息"""
         return await self.revokeGroupMsg(ctx.FromGroupId, ctx.MsgSeq, ctx.MsgRandom)
 

@@ -4,7 +4,6 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from ..collection import MsgTypes
-from ..model import FriendMsg
 
 
 # pic
@@ -21,7 +20,7 @@ class Pic(BaseModel):
     Content: str = ""
 
 
-def pic(ctx: FriendMsg) -> Optional[Pic]:
+def pic(ctx) -> Optional[Pic]:
     """图片 PicMsg"""
     try:
         assert ctx.MsgType == MsgTypes.PicMsg
@@ -38,7 +37,7 @@ class Voice(BaseModel):
     Tips: str
 
 
-def voice(ctx: FriendMsg) -> Optional[Voice]:
+def voice(ctx) -> Optional[Voice]:
     """语音 VoiceMsg"""
     try:
         assert ctx.MsgType == MsgTypes.VoiceMsg
@@ -59,7 +58,7 @@ class Video(BaseModel):
     Tips: str
 
 
-def video(ctx: FriendMsg) -> Optional[Video]:
+def video(ctx) -> Optional[Video]:
     """视频 VideoMsg"""
     try:
         assert ctx.MsgType == MsgTypes.VideoMsg
@@ -79,7 +78,7 @@ class Reply(BaseModel):
     Tips: str
 
 
-def reply(ctx: FriendMsg) -> Optional[Reply]:
+def reply(ctx) -> Optional[Reply]:
     """回复 ReplayMsg"""
     try:
         assert ctx.MsgType in (MsgTypes.ReplyMsg, MsgTypes.ReplyMsgA)
@@ -98,7 +97,7 @@ class File(BaseModel):
     Tips: str = "[好友文件]"
 
 
-def file(ctx: FriendMsg) -> Optional[File]:
+def file(ctx) -> Optional[File]:
     """文件 FriendFileMsg"""
     try:
         assert ctx.MsgType == MsgTypes.FriendFileMsg

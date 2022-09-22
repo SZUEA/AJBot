@@ -29,6 +29,7 @@ __all__ = [
     "async_run",
     "download",
     "to_async",
+    "plugin_receiver"
 ]
 
 
@@ -199,7 +200,7 @@ class SwitcherManager:
 
 
 def download(
-    url: str, dist: Union[str, Path], timeout: int = 20, status: bool = True, **kwargs
+        url: str, dist: Union[str, Path], timeout: int = 20, status: bool = True, **kwargs
 ):
     """下载文件
     :param url: 文件URL
@@ -291,8 +292,7 @@ class _PluginReceiver:
     """插件接收器助手"""
 
     def __init__(self, stack=2):
-        self.__group = []
-        self.__friend = []
+        self.__wx = []
         self.__event = []
 
         self.__stack = stack
@@ -303,23 +303,12 @@ class _PluginReceiver:
             f = f.f_back  # type: ignore
         f.f_globals[name] = value  # type: ignore
 
-    def __sync_group(self, ctx):
-        for func in self.__group:
+    def __sync_wx(self, ctx):
+        for func in self.__wx:
             func(ctx)
 
-    async def __async_group(self, ctx):
-        for func in self.__group:
-            if asyncio.iscoroutinefunction(func):
-                await func(ctx)
-            else:
-                func(ctx)
-
-    def __sync_friend(self, ctx):
-        for func in self.__friend:
-            func(ctx)
-
-    async def __async_friend(self, ctx):
-        for func in self.__friend:
+    async def __async_wx(self, ctx):
+        for func in self.__wx:
             if asyncio.iscoroutinefunction(func):
                 await func(ctx)
             else:
@@ -336,25 +325,13 @@ class _PluginReceiver:
             else:
                 func(ctx)
 
-    def group(self, func):
-        # 因为异步接收器可能不是第一个添加，所以每次添加异步接收器时
-        # 都设置插件的接收函数为异步
-        # 默认是同步, 当第一次添加时设置一次足够了
+    def wx(self, func):
         if asyncio.iscoroutinefunction(func):
-            self.__set_globals("receive_group_msg", self.__async_group)
-        elif len(self.__group) == 0:
-            self.__set_globals("receive_group_msg", self.__sync_group)
-        assert func not in self.__group, "重复添加不合常理, 直接报错"
-        self.__group.append(func)
-        return func
-
-    def friend(self, func):
-        if asyncio.iscoroutinefunction(func):
-            self.__set_globals("receive_friend_msg", self.__async_friend)
-        elif len(self.__friend) == 0:
-            self.__set_globals("receive_friend_msg", self.__sync_friend)
-        assert func not in self.__friend, "重复添加不合常理, 直接报错"
-        self.__friend.append(func)
+            self.__set_globals("receive_wx_msg", self.__async_wx)
+        elif len(self.__wx) == 0:
+            self.__set_globals("receive_wx_msg", self.__sync_wx)
+        assert func not in self.__wx, "重复添加不合常理, 直接报错"
+        self.__wx.append(func)
         return func
 
     def event(self, func):
@@ -379,14 +356,9 @@ class plugin_receiver:
         return instance
 
     @classmethod
-    def group(cls, func: T_GeneralReceiver) -> T_GeneralReceiver:
+    def wx(cls, func: T_GeneralReceiver) -> T_GeneralReceiver:
         """添加群消息接收器到该插件的运行队列里"""
-        return cls.__get_instance().group(func)
-
-    @classmethod
-    def friend(cls, func: T_GeneralReceiver) -> T_GeneralReceiver:
-        """添加好友消息接收器到该插件的运行队列里"""
-        return cls.__get_instance().friend(func)
+        return cls.__get_instance().wx(func)
 
     @classmethod
     def event(cls, func: T_GeneralReceiver) -> T_GeneralReceiver:

@@ -199,7 +199,7 @@ def add(name, friend, group, event):
                 """
                 @deco.ignore_botself
                 def receive_friend_msg(ctx: FriendMsg):
-                    Action(ctx.CurrentQQ)
+                    Action(ctx.CurrentWxid)
                 """
             )
         )
@@ -210,7 +210,7 @@ def add(name, friend, group, event):
                 """
                 @deco.ignore_botself
                 def receive_group_msg(ctx: GroupMsg):
-                    Action(ctx.CurrentQQ)
+                    Action(ctx.CurrentWxid)
                 """
             )
         )
@@ -220,7 +220,7 @@ def add(name, friend, group, event):
             textwrap.dedent(
                 """
                 def receive_events(ctx: EventMsg):
-                    Action(ctx.CurrentQQ)
+                    Action(ctx.CurrentWxid)
                 """
             )
         )

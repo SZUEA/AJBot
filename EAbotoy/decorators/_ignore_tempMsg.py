@@ -1,14 +1,13 @@
-from ..model import FriendMsg
+from ..model import WeChatMsg
 
 
-def ignore_tempMsg(func=None):
+def ignore_FriendMsg(func=None):
     """忽略私聊信息 FriendMsg"""
     if func is None:
-        return ignore_tempMsg
+        return ignore_FriendMsg
 
-    def inner(ctx):
-        assert isinstance(ctx, FriendMsg)
-        if ctx.TempUin is None:
+    def inner(ctx: WeChatMsg):
+        if "@chatroom" in ctx.FromUserName:
             return func(ctx)
         return None
 

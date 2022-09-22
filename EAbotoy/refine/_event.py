@@ -8,7 +8,7 @@ from EAbotoy.refine import _copy_ctx
 class _EventMsg(EventMsg):
     def _carry_properties(self, ctx: EventMsg):
         self.message = ctx.message
-        self.CurrentQQ = ctx.CurrentQQ
+        self.CurrentWxid = ctx.CurrentWxid
 
         self.data = ctx.data
 

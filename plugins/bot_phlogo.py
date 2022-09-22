@@ -1,14 +1,15 @@
-"""快速生成PornHub风格的logo
-横向：ph Hello world
-竖直：ph Hello world 1
+"""快速生成logo
+横向：pp Hello world
+竖直：pp Hello world 1
 """
 # 主要代码部分 https://github.com/akarrin/ph-logo/
 import base64
 import io
 
-from EAbotoy import GroupMsg
+from EAbotoy import MsgTypes
 from EAbotoy.contrib import get_cache_dir
-from EAbotoy.decorators import ignore_botself, queued_up
+from EAbotoy.decorators import ignore_botself, queued_up, these_msgtypes
+from EAbotoy.model import WeChatMsg
 from EAbotoy.sugar import Picture
 from PIL import Image, ImageDraw, ImageFont
 
@@ -32,8 +33,9 @@ if not FONT_PATH.exists():
 
     try:
         with httpx.stream(
-            "GET",
-            "https://github.com/opq-osc/EAbotoy-plugins/releases/download/phlogo%E6%89%80%E9%9C%80%E5%AD%97%E4%BD%93/ArialEnUnicodeBold.ttf",
+                "GET",
+                "https://github.com/opq-osc/botoy-plugins/releases/download/phlogo%E6%89%80%E9%9C%80%E5%AD%97%E4%BD"
+                "%93/ArialEnUnicodeBold.ttf",
         ) as resp:
             print("连接字体资源成功")
             total_size = int(resp.headers["content-length"])
@@ -125,7 +127,7 @@ def create_right_part_img(text: str, font_size: int):
 
 
 def combine_img_horizontal(
-    left_text: str, right_text, font_size: int = FONT_SIZE
+        left_text: str, right_text, font_size: int = FONT_SIZE
 ) -> str:
     left_img = create_left_part_img(left_text, font_size)
     right_img = create_right_part_img(right_text, font_size)
@@ -163,9 +165,10 @@ def combine_img_vertical(left_text: str, right_text, font_size: int = FONT_SIZE)
 
 
 @ignore_botself
+@these_msgtypes(MsgTypes.TextMsg)
 @queued_up  # 发图的操作排队执行成功率更高
-def receive_group_msg(ctx: GroupMsg):
-    if ctx.Content.startswith("ph "):
+def receive_wx_msg(ctx: WeChatMsg):
+    if ctx.Content.startswith("pp "):
         args = [i.strip() for i in ctx.Content.split(" ") if i.strip()]
         if len(args) >= 3:
             left = args[1]

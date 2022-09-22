@@ -1,7 +1,7 @@
 import re
 from typing import Union
 
-from ..model import FriendMsg, GroupMsg
+from ..model import WeChatMsg
 
 
 def re_findall(pattern: Union[str, re.Pattern]):
@@ -15,8 +15,8 @@ def re_findall(pattern: Union[str, re.Pattern]):
     """
 
     def deco(func):
-        def inner(ctx):
-            assert isinstance(ctx, (GroupMsg, FriendMsg))
+        def inner(ctx: WeChatMsg):
+
             find = re.findall(pattern, ctx.Content)
             if find:
                 setattr(ctx, "_findall", find)

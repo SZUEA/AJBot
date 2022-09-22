@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from ..collection import EventNames
 from ..model import EventMsg
 
+
 #  --------- group event ---------
 
 # revoke

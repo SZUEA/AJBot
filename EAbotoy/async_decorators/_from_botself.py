@@ -12,7 +12,7 @@ def from_botself(func=None):
             userid = ctx.FromUserId
         else:
             userid = ctx.FromUin
-        if userid == ctx.CurrentQQ:
+        if userid == ctx.CurrentWxid:
             return await func(ctx)
         return None
 

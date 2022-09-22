@@ -5,7 +5,6 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from ..collection import MsgTypes
-from ..model import GroupMsg
 
 
 # at
@@ -20,7 +19,7 @@ class AT(BaseModel):
     UserID: List[int]
 
 
-def at(ctx: GroupMsg, clean=True) -> Optional[AT]:
+def at(ctx, clean=True) -> Optional[AT]:
     """艾特@ AtMsg
     :param clean: 如果为``True``将会清除发送文字内容中包含的被AT用户的昵称
     """
@@ -50,7 +49,7 @@ class Reply(BaseModel):
     Tips: str = "[回复]"
 
 
-def reply(ctx: GroupMsg) -> Optional[Reply]:
+def reply(ctx) -> Optional[Reply]:
     """回复 AtMsg"""
     try:
         assert ctx.MsgType == MsgTypes.AtMsg
@@ -85,7 +84,7 @@ class Pic(BaseModel):
     UserID: Optional[List[int]]
 
 
-def pic(ctx: GroupMsg) -> Optional[Pic]:
+def pic(ctx) -> Optional[Pic]:
     """图片 PicMsg"""
     try:
         assert ctx.MsgType == MsgTypes.PicMsg
@@ -102,7 +101,7 @@ class Voice(BaseModel):
     Tips: str = "语音"
 
 
-def voice(ctx: GroupMsg) -> Optional[Voice]:
+def voice(ctx) -> Optional[Voice]:
     """语音 VoiceMsg"""
     try:
         assert ctx.MsgType == MsgTypes.VoiceMsg
@@ -123,7 +122,7 @@ class Video(BaseModel):
     Tips: str
 
 
-def video(ctx: GroupMsg) -> Optional[Video]:
+def video(ctx) -> Optional[Video]:
     """视频 VideoMsg"""
     try:
         assert ctx.MsgType == MsgTypes.VideoMsg
@@ -142,7 +141,7 @@ class File(BaseModel):
     Tips: str = "[群文件]"
 
 
-def file(ctx: GroupMsg) -> Optional[File]:
+def file(ctx) -> Optional[File]:
     """文件 GroupFileMsg"""
     try:
         assert ctx.MsgType == MsgTypes.GroupFileMsg

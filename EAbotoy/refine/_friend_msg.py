@@ -11,7 +11,7 @@ from EAbotoy.refine import _copy_ctx
 class _FriendMsg(FriendMsg):
     def _carry_properties(self, ctx: FriendMsg):
         self.message = ctx.message
-        self.CurrentQQ = ctx.CurrentQQ
+        self.CurrentWxid = ctx.CurrentWxid
 
         self.data = ctx.data
 

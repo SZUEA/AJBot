@@ -17,14 +17,15 @@ class DB:
             for idx, col in enumerate(cursor.description):
                 d[col[0]] = row[idx]
             return d
+
         self.cursor.row_factory = dict_factory
 
     def create(self):
         self.cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS `bot_config` (
-              `current_qq` bigint(20) NOT NULL,
-              `master_qq` bigint(20) NOT NULL
+              `current_wxid` varchar(40) NOT NULL,
+              `master_wxid` varchar(40) NOT NULL
             );
             """
         )
@@ -32,13 +33,14 @@ class DB:
         self.cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS `reply_message` (
-                `id` integer PRIMARY KEY autoincrement ,
+              `id` integer PRIMARY KEY autoincrement ,
               `rules` text,
               `response` text,
               `rule_type` varchar(40)  NOT NULL,
               `response_type` varchar(40)  NOT NULL,
               `pic_url` text,
-              `from_group` bigint(20) NOT NULL
+              `from_wxid` varchar(40) NOT NULL,
+              `owner` varchar(40) NOT NULL
             );
             """
         )
@@ -82,39 +84,60 @@ class DB:
     def delete_reply_message(self, message_id):
         self.commit(f'DELETE FROM reply_message WHERE id={message_id}')
 
-    def insert_reply_message(self, rules, response, rule_type, response_type, from_group, pic_url=''):
+    def insert_reply_message(self, rules, response, rule_type, response_type, from_wxid, owner, pic_url=''):
         return self.insert('reply_message', dict(
             rules=rules,
             response=response,
             rule_type=rule_type,
             response_type=response_type,
             pic_url=pic_url,
-            from_group=from_group,
+            from_wxid=from_wxid,
+            owner=owner,
         ))
 
     def get_qq_bot_reply(self):
         return self.query('''SELECT * FROM reply_message WHERE 1=1''')
 
-    def add_bot_admin(self, admin_qq, bot_qq):
+    def add_bot_admin(self, admin_wxid, bot_wxid):
         self.insert('bot_config', dict(
-            current_qq=bot_qq,
-            master_qq=admin_qq,
+            current_wxid=bot_wxid,
+            master_wxid=admin_wxid,
         ))
 
-    def find_qq_bot_master(self, current_qq, master_qq):
-        return self.query(f'''SELECT * FROM bot_config WHERE current_qq={current_qq} 
-                            AND master_qq={master_qq}''')
+    def my_count_owner_reply(self, owner, from_wxid):
+        return self.query(f'''SELECT COUNT(1) FROM reply_message
+        WHERE owner = '{owner}' and from_wxid='{from_wxid}'
+        ''')
+
+    def get_my_keywords(self, owner, from_wxid):
+        return self.query(f'''SELECT rules, owner, from_wxid FROM reply_message
+        WHERE owner = '{owner}' and from_wxid='{from_wxid}'
+        ''')
+
+    def find_qq_bot_master(self, current_wxid, master_wxid):
+        return self.query(f'''SELECT COUNT(1) FROM bot_config WHERE 
+        current_wxid="{current_wxid}" AND master_wxid="{master_wxid}"''')
 
 
-def is_bot_master(bot_qq, user):
+def is_bot_master(bot_wxid, user):
     db = DB()
     try:
-        r = db.find_qq_bot_master(bot_qq, user)
-        if len(r) == 0:
+        r = db.find_qq_bot_master(bot_wxid, user)
+        if r[0]['COUNT(1)'] == 0:
             return False
         else:
             return True
     except Exception as e:
         print('is_bot_master')
+        print(e)
+        return False
+
+
+def count_owner_reply(owner, from_wxid):
+    db = DB()
+    try:
+        return db.my_count_owner_reply(owner, from_wxid)[0]['COUNT(1)']
+    except Exception as e:
+        print('count_owner_reply')
         print(e)
         return False

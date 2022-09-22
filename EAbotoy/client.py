@@ -13,19 +13,17 @@ from socketio.exceptions import ConnectionError as SioConnectionError
 
 from .config import jconfig
 from .log import logger, logger_init
-from .model import EventMsg, FriendMsg, GroupMsg
+from .model import EventMsg, WeChatMsg
 from .plugin import PluginManager
 from .pool import WorkerPool
 from .etyping import (
     T_EventMiddleware,
     T_EventReceiver,
-    T_FriendMsgMiddleware,
-    T_FriendMsgReceiver,
     T_GeneralReceiver,
-    T_GroupMsgMiddleware,
-    T_GroupMsgReceiver,
+    T_WxMsgReceiver, T_WxMsgMiddleware,
 )
 from .utils import check_schema, sync_run, to_address
+
 
 #######################
 #     socketio
@@ -40,7 +38,7 @@ from .utils import check_schema, sync_run, to_address
 
 class Botoy:
     """
-    :param wxid: 机器人QQ号(多Q就传qq号列表), 如果不传则会监听服务端传过来的所有机器人的
+    :param wxid: 机器人wx号, 如果不传则会监听服务端传过来的所有机器人的
                 所有信息，如果传了，则只会接收对应机器人的信息. 0会被忽略，相当于没传
     :param use_plugins: 是否开启插件功能, 默认``False``
     :param port: 运行端口, 默认为``8888``
@@ -67,17 +65,17 @@ class Botoy:
     plugMgr: PluginManager = LazyPluginManager()  # type: ignore
 
     def __init__(
-        self,
-        *,
-        wxid: Optional[Union[str, List[str]]] = None,
-        use_plugins: Optional[bool] = False,
-        port: Optional[int] = None,
-        host: Optional[str] = None,
-        group_blacklist: Optional[List[int]] = None,
-        friend_blacklist: Optional[List[int]] = None,
-        blocked_users: Optional[List[int]] = None,
-        log: bool = True,
-        log_file: bool = False,
+            self,
+            *,
+            wxid: Optional[Union[str, List[str]]] = None,
+            use_plugins: Optional[bool] = False,
+            port: Optional[int] = None,
+            host: Optional[str] = None,
+            group_blacklist: Optional[List[int]] = None,
+            friend_blacklist: Optional[List[int]] = None,
+            blocked_users: Optional[List[int]] = None,
+            log: bool = True,
+            log_file: bool = False,
     ):
         if wxid is not None:
             if not isinstance(wxid, str) and isinstance(wxid, Sequence):
@@ -86,7 +84,7 @@ class Botoy:
                 self.wxid = [wxid]  # type: ignore
         else:
             self.wxid = []
-        self.wxid: List[str] = [str(qq) for qq in self.wxid if str(qq) != ""]
+        self.wxid: List[str] = [str(wxid) for wxid in self.wxid if str(wxid) != ""]
 
         self.host = check_schema(host or jconfig.host)
         self.port = int(port or jconfig.port)
@@ -104,16 +102,14 @@ class Botoy:
 
         # 消息接收函数列表
         # 这里只储存主体文件中通过装饰器或函数添加的接收函数
-        self._friend_msg_receivers: List[T_FriendMsgReceiver] = []
-        self._group_msg_receivers: List[T_GroupMsgReceiver] = []
         self._event_receivers: List[T_EventReceiver] = []
+        self._wx_msg_receivers: List[T_WxMsgReceiver] = []
 
         # 消息上下文对象中间件列表
         # 中间件以对应消息上下文为唯一参数，返回值与上下文类型一致则向下传递
         # 否则直接丢弃该次消息
-        self._friend_context_middlewares: List[T_FriendMsgMiddleware] = []
-        self._group_context_middlewares: List[T_GroupMsgMiddleware] = []
         self._event_context_middlewares: List[T_EventMiddleware] = []
+        self._wx_context_middlewares: List[T_WxMsgMiddleware] = []
 
         # webhook
         if self.webhook:
@@ -121,9 +117,8 @@ class Botoy:
 
             flag = self.__class__.__name__.startswith("Async") and "async_" or ""
 
-            self._friend_msg_receivers.append(getattr(webhook, f"{flag}friend"))
-            self._group_msg_receivers.append(getattr(webhook, f"{flag}group"))
             self._event_receivers.append(getattr(webhook, f"{flag}event"))
+            self._wx_msg_receivers.append(getattr(webhook, f"{flag}wx"))
 
         # 插件管理
         # 管理插件提供的接收函数
@@ -141,9 +136,10 @@ class Botoy:
         self._close_callbacks.append(self._pool.shutdown)
 
         # 初始化消息包接收函数
-        self._friend_msg_handler = self._msg_handler_factory(FriendMsg)
-        self._group_msg_handler = self._msg_handler_factory(GroupMsg)
+        # self._friend_msg_handler = self._msg_handler_factory(FriendMsg)
+        # self._group_msg_handler = self._msg_handler_factory(GroupMsg)
         self._event_handler = self._msg_handler_factory(EventMsg)
+        self._wx_msg_handler = self._msg_handler_factory(WeChatMsg)
 
     ########################################################################
     # message handler
@@ -154,33 +150,25 @@ class Botoy:
 
         return handler
 
-    def _context_handler(self, context: Union[FriendMsg, GroupMsg, EventMsg]):
+    def _context_handler(self, context: Union[EventMsg, WeChatMsg]):
         passed_context = self._context_checker(context)
         if passed_context:
             return self._pool.submit(self._context_distributor, context)
         return
 
-    def _context_checker(self, context: Union[FriendMsg, GroupMsg, EventMsg]):
-        if self.wxid and context.CurrentQQ not in self.wxid:
+    def _context_checker(self, context: Union[EventMsg, WeChatMsg]):
+        if self.wxid and context.CurrentWxid not in self.wxid:
             return
 
         logger.info(f"{context.__class__.__name__} ->  {context.data}")
 
-        if isinstance(context, FriendMsg):
-            if context.FromUin in (
-                *self.friend_blacklist,
-                *self.blocked_users,
+        if isinstance(context, WeChatMsg):
+            if context.FromUserName in (
+                    *self.friend_blacklist,
+                    *self.blocked_users,
             ):
                 return
-            middlewares = self._friend_context_middlewares
-
-        elif isinstance(context, GroupMsg):
-            if (
-                context.FromGroupId in self.group_blacklist
-                or context.FromUserId in self.blocked_users
-            ):
-                return
-            middlewares = self._group_context_middlewares
+            middlewares = self._wx_context_middlewares
 
         else:
             middlewares = self._event_context_middlewares
@@ -200,7 +188,7 @@ class Botoy:
     ########################################################################
     # context distributor
     ########################################################################
-    def _context_distributor(self, context: Union[FriendMsg, GroupMsg, EventMsg]):
+    def _context_distributor(self, context: Union[WeChatMsg, EventMsg]):
         for receiver in self._get_context_receivers(context):
             new_context = copy.deepcopy(context)
             if asyncio.iscoroutinefunction(receiver):
@@ -208,17 +196,13 @@ class Botoy:
             else:
                 self._pool.submit(receiver, new_context)
 
-    def _get_context_receivers(self, context: Union[FriendMsg, GroupMsg, EventMsg]):
+    def _get_context_receivers(self, context: Union[WeChatMsg, EventMsg]):
 
-        if isinstance(context, FriendMsg):
+        if isinstance(context, WeChatMsg):
             receivers = [
-                *self._friend_msg_receivers,
-                *self.plugMgr.friend_msg_receivers,
-            ]
-        elif isinstance(context, GroupMsg):
-            receivers = [
-                *self._group_msg_receivers,
-                *self.plugMgr.group_msg_receivers,
+                *self._wx_msg_receivers,
+                *self.plugMgr.wx_msg_receivers,
+                *self.plugMgr.wx_session_msg_receivers,
             ]
         else:
             receivers = [
@@ -241,40 +225,31 @@ class Botoy:
         is_friend = False
         is_group = False
         is_event = False
+        is_wx = False
         # 1. 未指定类型，全部接收
-        if annotation == inspect._empty:
-            is_friend = is_group = is_event = True
+        # if annotation == inspect._empty:
+        #     is_friend = is_group = is_event = True
         # 2. 单个类型
-        elif annotation in ("FriendMsg", FriendMsg):
-            is_friend = True
-        elif annotation in ("GroupMsg", GroupMsg):
-            is_group = True
-        elif annotation in ("EventMsg", EventMsg):
+        if annotation in ("EventMsg", EventMsg):
             is_event = True
+        elif annotation in ("WeChatMsgs", WeChatMsg):
+            is_wx = True
         # 3. 联合类型
         else:
             args = annotation.__args__
-            is_friend = FriendMsg in args
-            is_group = GroupMsg in args
             is_event = EventMsg in args
+            is_wx = WeChatMsg in args
 
-        if is_friend:
-            self._friend_msg_receivers.append(receiver)  # type: ignore
-        if is_group:
-            self._group_msg_receivers.append(receiver)  # type: ignore
         if is_event:
             self._event_receivers.append(receiver)  # type: ignore
+        if is_wx:
+            self._wx_msg_receivers.append(receiver)  # type: ignore
 
         return self
 
-    def on_friend_msg(self, receiver: T_FriendMsgReceiver):
-        """添加好友消息接收函数"""
-        self._friend_msg_receivers.append(receiver)
-        return self  # 包括下面的六个方法是都不需要返回值的, 但返回本身也无妨,可以支持链式初始化
-
-    def on_group_msg(self, receiver: T_GroupMsgReceiver):
-        """添加群消息接收函数"""
-        self._group_msg_receivers.append(receiver)
+    def on_wx_msg(self, receiver: T_WxMsgReceiver):
+        """添加事件消息接收函数"""
+        self._wx_msg_receivers.append(receiver)
         return self
 
     def on_event(self, receiver: T_EventReceiver):
@@ -285,14 +260,9 @@ class Botoy:
     ########################################################################
     # Add context middlewares
     ########################################################################
-    def friend_context_use(self, middleware: T_FriendMsgMiddleware):
-        """注册好友消息中间件"""
-        self._friend_context_middlewares.append(middleware)
-        return self
-
-    def group_context_use(self, middleware: T_GroupMsgMiddleware):
-        """注册群消息中间件"""
-        self._group_context_middlewares.append(middleware)
+    def wx_context_use(self, middleware: T_WxMsgMiddleware):
+        """注册wx消息中间件"""
+        self._wx_context_middlewares.append(middleware)
         return self
 
     def event_context_use(self, middleware: T_EventMiddleware):
@@ -345,28 +315,19 @@ class Botoy:
     ########################################################################
     # 开放出来的用于多种连接方式的入口函数
     ########################################################################
-    def group_msg_handler(self, msg: dict):
-        """群消息入口函数
-        :param msg: 完整的消息数据
-        """
-        # 此时plugMgr未初始化，将会出现先打印出消息日志，然后加载插件，打印插件信息
-        # 虽然只会在第一条消息时出现这个现象，但这是不符合常理的
-        self.plugMgr
-        return self._group_msg_handler(msg)
-
-    def friend_msg_handler(self, msg: dict):
-        """好友消息入口函数
-        :param msg: 完整的消息数据
-        """
-        self.plugMgr
-        return self._friend_msg_handler(msg)
-
     def event_handler(self, msg: dict):
         """事件入口函数
         :param msg: 完整的消息数据
         """
         self.plugMgr
         return self._event_handler(msg)
+
+    def wx_msg_handler(self, msg: dict):
+        """事件入口函数
+        :param msg: 完整的消息数据
+        """
+        self.plugMgr
+        return self._wx_msg_handler(msg)
 
     def run(self, wait: bool = True, sio: Optional[socketio.Client] = None):
         """运行
@@ -380,9 +341,10 @@ class Botoy:
 
         sio.event(self._connect)
         sio.event(self._disconnect)
-        sio.on("OnGroupMsgs", self._group_msg_handler)
-        sio.on("OnFriendMsgs", self._friend_msg_handler)
-        sio.on("OnEvents", self._event_handler)
+        # sio.on("OnGroupMsgs", self._group_msg_handler)
+        # sio.on("OnFriendMsgs", self._friend_msg_handler)
+        sio.on("OnWeChatEvents", self._event_handler)
+        sio.on("OnWeChatMsgs", self._wx_msg_handler)
 
         delay = 1
 

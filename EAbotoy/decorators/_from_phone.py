@@ -1,5 +1,4 @@
 from ..collection import MsgTypes
-from ..model import FriendMsg
 
 
 def from_phone(func=None):
@@ -8,7 +7,7 @@ def from_phone(func=None):
         return from_phone
 
     def inner(ctx):
-        assert isinstance(ctx, FriendMsg)
+        # assert isinstance(ctx, FriendMsg)
         if ctx.MsgType == MsgTypes.PhoneMsg:
             return func(ctx)
         return None

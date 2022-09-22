@@ -1,6 +1,7 @@
 import re
 
-from ..model import FriendMsg, GroupMsg
+from ..collection import MsgTypes
+from ..model import WeChatMsg, WeChatMsg
 from ..parser import friend as fp
 from ..parser import group as gp
 
@@ -15,20 +16,14 @@ def in_content(string: str, raw: bool = True):
 
     def deco(func):
         def inner(ctx):
-            assert isinstance(ctx, (GroupMsg, FriendMsg))
+            assert isinstance(ctx,WeChatMsg)
             if raw:
                 if re.findall(string, ctx.Content):
                     return func(ctx)
             else:
-                if isinstance(ctx, GroupMsg):
-                    pic_data = gp.pic(ctx)
-                else:
-                    pic_data = fp.pic(ctx)
-                if pic_data is not None:
-                    content = pic_data.Content
-                else:
-                    content = ctx.Content
-                if re.findall(string, content):
+                if ctx.MsgType != MsgTypes.TextMsg:
+                    return
+                if re.findall(string, ctx.Content):
                     return func(ctx)
             return None
 

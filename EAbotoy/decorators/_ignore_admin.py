@@ -1,7 +1,6 @@
 import functools
 
 from EAbotoy.action import Action
-from EAbotoy.model import GroupMsg
 
 
 @functools.lru_cache(520)
@@ -17,9 +16,9 @@ def ignore_admin(func=None):
         return ignore_admin
 
     def inner(ctx):
-        assert isinstance(ctx, GroupMsg)
+        # assert isinstance(ctx, GroupMsg)
         admins = __get_group_admins(
-            qq=ctx.CurrentQQ,
+            qq=ctx.CurrentWxid,
             host=getattr(ctx, "_host", "http://127.0.0.1"),
             port=getattr(ctx, "_port", 8888),
             group=ctx.FromGroupId,

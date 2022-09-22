@@ -18,7 +18,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import colorama
 from prettytable import PrettyTable
 
-from .etyping import T_EventReceiver, T_FriendMsgReceiver, T_GroupMsgReceiver
+from .etyping import T_EventReceiver, T_WxMsgReceiver
 
 
 def resolve_plugin_name(name: str) -> str:
@@ -85,12 +85,12 @@ class Plugin:
         return ""
 
     @property
-    def receive_group_msg(self) -> Optional[T_GroupMsgReceiver]:
-        return self.module.__dict__.get("receive_group_msg")
+    def receive_wx_msg(self) -> Optional[T_WxMsgReceiver]:
+        return self.module.__dict__.get("receive_wx_msg")
 
     @property
-    def receive_friend_msg(self) -> Optional[T_FriendMsgReceiver]:
-        return self.module.__dict__.get("receive_friend_msg")
+    def receive_session_wx_msg(self) -> Optional[T_WxMsgReceiver]:
+        return self.module.__dict__.get("receive_session_wx_msg")
 
     @property
     def receive_events(self) -> Optional[T_EventReceiver]:
@@ -126,6 +126,7 @@ class PluginManager:
     def load_plugins(self) -> None:
         """加载插件"""
         CACHE_PATH.touch()
+
         # 整理所有插件的导入路径
         # 如果是包形式，则还需要多读取一级目录
         def clean_path(name) -> Optional[str]:
@@ -216,18 +217,18 @@ class PluginManager:
         """
         plugins = []
         for id, plugin in self.plugins.items():
-            plugins.append((id, plugin.name))
+            plugins.append((id, plugin.name, plugin.help))
         return plugins
 
     @property
     def enabled_plugins(self) -> List[Tuple[str, str]]:
         """返回当前已启用插件信息
-        返回值是一个元组列表，元组有两项，第一项为插件id，第二项为插件名
+        返回值是一个元组列表，元组有两项，第一项为插件id，第二项为插件名, 第二项为help
         """
         plugins = []
         for id, plugin in self.plugins.items():
             if plugin.enabled:
-                plugins.append((id, plugin.name))
+                plugins.append((id, plugin.name, plugin.help))
         return plugins
 
     @property
@@ -242,21 +243,21 @@ class PluginManager:
         return plugins
 
     @property
-    def friend_msg_receivers(self) -> List[T_FriendMsgReceiver]:
-        """插件所提供的所有好友消息接收函数"""
-        receivers = []
-        for plugin in self.plugins.values():
-            if plugin.enabled and plugin.receive_friend_msg is not None:
-                receivers.append(plugin.receive_friend_msg)
-        return receivers
-
-    @property
-    def group_msg_receivers(self) -> List[T_GroupMsgReceiver]:
+    def wx_msg_receivers(self) -> List[T_WxMsgReceiver]:
         """插件所提供的所有群消息接收函数"""
         receivers = []
         for plugin in self.plugins.values():
-            if plugin.enabled and plugin.receive_group_msg is not None:
-                receivers.append(plugin.receive_group_msg)
+            if plugin.enabled and plugin.receive_wx_msg is not None:
+                receivers.append(plugin.receive_wx_msg)
+        return receivers
+
+    @property
+    def wx_session_msg_receivers(self) -> List[T_WxMsgReceiver]:
+        """插件所提供的所有群消息接收函数"""
+        receivers = []
+        for plugin in self.plugins.values():
+            if plugin.enabled and plugin.receive_session_wx_msg is not None:
+                receivers.append(plugin.receive_session_wx_msg)
         return receivers
 
     @property
@@ -288,7 +289,7 @@ class PluginManager:
     def info(self) -> str:
         """插件信息"""
         enabled_plugin_table = PrettyTable(
-            ["PLUGIN NAME", "GROUP MESSAGE", "FRIEND MESSAGE", "EVENT", "HELP"]
+            ["PLUGIN NAME", "WX MESSAGE", "EVENT", "HELP"]
         )
         disabled_plugin_table = PrettyTable(["REMOVED PLUGINS"])
 
@@ -312,8 +313,7 @@ class PluginManager:
                 enabled_plugin_table.add_row(
                     [
                         c(name),
-                        c("√" if plugin.receive_group_msg else ""),
-                        c("√" if plugin.receive_friend_msg else ""),
+                        c("√" if plugin.receive_wx_msg else ""),
                         c("√" if plugin.receive_events else ""),
                         c(plugin.help or ""),
                     ]

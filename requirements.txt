@@ -5,3 +5,5 @@ qrcode
 pydantic
 py-cpuinfo
 psutil
+requests
+py-dateutil

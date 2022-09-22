@@ -10,9 +10,10 @@ def need_action(func=None):
 
     def inner(ctx):
         action = Action(
-            ctx.CurrentQQ,
+            ctx.CurrentWxid,
             host=getattr(ctx, "_host", None),
             port=getattr(ctx, "_port", None),
+            is_use_queue=True
         )
         return func(ctx, action)
 

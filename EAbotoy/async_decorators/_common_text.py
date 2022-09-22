@@ -37,7 +37,7 @@ def common_text(
             return
         if isinstance(ctx, GroupMsg):
             if ignore_bot:
-                if ctx.FromUserId == ctx.CurrentQQ:
+                if ctx.FromUserId == ctx.CurrentWxid:
                     return
             if equal is not None:
                 if ctx.Content != equal:
@@ -85,7 +85,7 @@ def common_text(
                 return
 
             if ignore_bot:
-                if ctx.FromUin == ctx.CurrentQQ:
+                if ctx.FromUin == ctx.CurrentWxid:
                     return
             if equal is not None:
                 if ctx.Content != equal:

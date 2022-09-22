@@ -1,24 +1,48 @@
 # pylint: disable=too-many-instance-attributes
 import warnings
 from re import Match
-from typing import Optional
+from typing import Optional, List
+from xml.dom.minidom import Element, parseString
+
+from EAbotoy import collection
+from EAbotoy.collection import MsgTypes
 
 
-class GroupMsg:
-    message: dict  # raw message
-    CurrentQQ: int  # bot qq
-    data: dict  # Data
-    # data items
-    FromGroupId: int
-    FromGroupName: str
-    FromUserId: int
-    FromNickName: str
+class WeChatMsg:
+    MsgId: int
+    FromUserName: str
+    ToUserName: str
+    MsgType: int
+
     Content: str
-    MsgType: str
-    MsgTime: int
-    MsgSeq: int
-    MsgRandom: int
-    RedBaginfo: Optional[dict]
+
+    Status: int
+
+    ImgStatus: int
+    ImgBuf: str  # 图片小图 模糊图片 base64
+    imgCDNContent: str
+
+    emojiMd5: str
+
+    CreateTime: int
+    MsgSource: str
+
+    PushContent: str
+    NewMsgId: int
+    ActionUserName: str
+    ActionNickName: str
+
+    IsGroup: bool = False
+    GroupId: str = ""
+    MessageSenderId: str
+    master: str
+
+    isAtMsg: bool = False
+    atUserIds: List[str] = None
+
+    message: dict  # raw message
+    CurrentWxid: str
+    data: dict
 
     # 动态添加
     _host: str
@@ -31,42 +55,65 @@ class GroupMsg:
 
         # basic
         for name, value in dict(
-            message=message,
-            CurrentQQ=message["CurrentQQ"],
-            data=data,
+                message=message,
+                CurrentWxid=message["CurrentWxid"],
+                data=data,
         ).items():
             self.__dict__[name] = value
 
         # set Data items
         for name in [
-            "FromGroupId",
-            "FromGroupName",
-            "FromUserId",
-            "FromNickName",
-            "Content",
+            "MsgId",
+            "FromUserName",
+            "ToUserName",
             "MsgType",
-            "MsgTime",
-            "MsgSeq",
-            "MsgRandom",
-            "RedBaginfo",
+            "Content",
+            "Status",
+            "ImgStatus",
+            "ImgBuf",
+            "CreateTime",
+            "MsgSource",
+            "PushContent",
+            "NewMsgId",
+            "ActionUserName",
+            "ActionNickName",
         ]:
             self.__dict__[name] = data.get(name)
 
+        if "@chatroom" in self.FromUserName:
+            self.IsGroup = True
+            self.GroupId = self.FromUserName
+
+        if self.MsgType == MsgTypes.ImgMsg:
+            self.imgCDNContent = self.Content
+
+        if self.MsgType == MsgTypes.EmojiMsg:
+            self.emojiMd5 = parseString(self.Content).getElementsByTagName('emoji')[0].getAttribute("md5")
+
+        if self.MsgType == MsgTypes.TextMsg and "<atuserlist>" in self.MsgSource:
+            self.isAtMsg = True
+            self.atUserIds = parseString(self.MsgSource).getElementsByTagName("atuserlist")[0].childNodes[0].data.split(
+                ",")
+            self.atUserIds = [user for user in self.atUserIds if user != ""]
+
+        self.MessageSenderId = self.ActionUserName
+
     def __setattr__(self, name, value):
         if name in (
-            "message",
-            "CurrentQQ",
-            "data",
-            "FromGroupId",
-            "FromGroupName",
-            "FromUserId",
-            "FromNickName",
-            "Content",
-            "MsgType",
-            "MsgTime",
-            "MsgSeq",
-            "MsgRandom",
-            "RedBaginfo",
+                "MsgId",
+                "FromUserName",
+                "ToUserName",
+                "MsgType",
+                "Content",
+                "Status",
+                "ImgStatus",
+                "ImgBuf",
+                "CreateTime",
+                "MsgSource",
+                "PushContent",
+                "NewMsgId",
+                "ActionUserName",
+                "ActionNickName",
         ):
             warnings.warn(f"{name} 为保留属性，不建议修改", SyntaxWarning, 2)
 
@@ -76,89 +123,29 @@ class GroupMsg:
         return super().__getattribute__(name)
 
     def __repr__(self):
-        return f"GroupMsg => {self.data}"
-
-
-class FriendMsg:
-    message: dict  # raw message
-    CurrentQQ: int  # bot qq
-    data: dict  # Data
-    # data items
-    FromUin: int
-    ToUin: int
-    Content: str
-    MsgType: str
-    MsgSeq: int
-    TempUin: int  # 私聊(临时会话)特有, 入口群聊ID
-    RedBaginfo: Optional[dict]
-
-    # 动态添加
-    _host: str
-    _port: int
-    _match: Match
-    _findall: list
-
-    def __init__(self, message: dict):
-        data = message["CurrentPacket"]["Data"]
-
-        # basic
-        for name, value in dict(
-            message=message,
-            CurrentQQ=message["CurrentQQ"],
-            data=data,
-        ).items():
-            self.__dict__[name] = value
-
-        # set Data items
-        for name in [
-            "FromUin",
-            "ToUin",
-            "Content",
-            "MsgType",
-            "MsgSeq",
-            "RedBaginfo",
-            "TempUin",
-        ]:
-            self.__dict__[name] = data.get(name)
-
-    def __setattr__(self, name, value):
-        if name in (
-            "message",
-            "CurrentQQ",
-            "data",
-            "FromUin",
-            "ToUin",
-            "Content",
-            "MsgType",
-            "MsgSeq",
-            "TempUin",
-            "RedBaginfo",
-        ):
-            warnings.warn(f"{name} 为保留属性，不建议修改", SyntaxWarning, 2)
-        self.__dict__[name] = value
-
-    def __getattr__(self, name):
-        return super().__getattribute__(name)
-
-    def __repr__(self):
-        return f"FriendMsg => {self.data}"
+        return f"WeChatMsg => {self.data}"
 
 
 class EventMsg:
     message: dict  # raw message
-    CurrentQQ: int  # bot qq
+    CurrentWxid: int  # bot qq
     data: dict  # Data
-    # Data items
-    EventName: str
-    EventData: dict
-    EventMsg: dict
     # EventMsg items
-    Content: str
-    FromUin: int
-    MsgSeq: int
-    MsgType: str
-    ToUin: int
-    RedBaginfo: Optional[dict]
+    EventName: str
+
+    # DATA items
+    ChatUserName: str
+    FromUserName: str
+    PattedUserName: str
+
+    # 拍一拍
+    Template: dict
+
+    # 邀请进群
+    InviteNickName: str
+    InviteUserName: str
+    InvitedNickName: str
+    InvitedUserName: str
 
     _host: str
     _port: int
@@ -168,34 +155,19 @@ class EventMsg:
 
         # basic
         for name, value in dict(
-            message=message,
-            CurrentQQ=message["CurrentQQ"],
-            data=data,
+                message=message,
+                CurrentWxid=message["CurrentWxid"],
+                data=data,
         ).items():
             self.__dict__[name] = value
 
         # set Data items
-        for name in ["EventName", "EventData", "EventMsg"]:
+        for name in ["EventName", "Template", "ChatUserName", "FromUserName", "PattedUserName"]:
             self.__dict__[name] = data.get(name)
-        # set EventMsg items
-        eventMsg = data["EventMsg"]
-        for name in ["Content", "FromUin", "MsgSeq", "MsgType", "ToUin", "RedBaginfo"]:
-            self.__dict__[name] = eventMsg.get(name)
 
     def __setattr__(self, name, value):
         if name in (
-            "message",
-            "CurrentQQ",
-            "data",
-            "EventName"
-            "EventData"
-            "EventMsg"
-            "Content"
-            "FromUin"
-            "MsgSeq"
-            "MsgType"
-            "ToUin"
-            "RedBaginfo",
+                "EventName", "Template", "ChatUserName", "FromUserName", "PattedUserName"
         ):
             warnings.warn(f"{name} 为保留属性，不建议修改", SyntaxWarning, 2)
         self.__dict__[name] = value

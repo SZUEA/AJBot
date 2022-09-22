@@ -1,14 +1,14 @@
-from ..model import GroupMsg
+from EAbotoy.model import WeChatMsg
 
 
 def from_these_groups(*groups):
     """只接受这些群组的消息 GroupMsg"""
 
     def deco(func):
-        def inner(ctx):
+        def inner(ctx: WeChatMsg):
             nonlocal groups
-            assert isinstance(ctx, GroupMsg)
-            from_group = ctx.FromGroupId
+
+            from_group = ctx.FromUserName
             if from_group in groups:
                 return func(ctx)
             return None

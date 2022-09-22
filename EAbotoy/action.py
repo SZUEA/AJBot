@@ -1,29 +1,89 @@
 # pylint: disable=R0904
+import functools
 import mimetypes
+import queue
 import threading
 import time
 import traceback
 import uuid
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Callable
 
 import httpx
 
 from EAbotoy import macro
 from EAbotoy.config import jconfig
 from EAbotoy.log import logger
-from EAbotoy.model import EventMsg, FriendMsg, GroupMsg
+from EAbotoy.model import EventMsg, WeChatMsg
 from EAbotoy.parser import event as eventParser
 
 from . import utils
 
 
+class _Task:
+    def __init__(self, target: Callable, args: tuple = None, callback: Callable = None):
+        args = args or tuple()
+        self.target = functools.partial(target, *args)
+        functools.update_wrapper(self.target, target)
+        self.callback = callback
+
+
+class _SendThread(threading.Thread):
+    def __init__(self, delay=1.1):
+        super().__init__()
+        self.tasks = queue.Queue(maxsize=-1)
+        self.running = False
+        self.delay = delay
+        self.last_send_time = time.time()
+
+    def run(self):
+        self.running = True
+        while True:
+            try:
+                # 因为重载(importlib.relaod)之后，线程仍会在后台运行
+                # 暂时使用超时跳出线程
+                # 线程停了之后，被重载后，是不是会被gc??? 0.o
+                task: _Task = self.tasks.get(timeout=30 * 60)  # 30min
+            except queue.Empty:
+                self.running = False
+                break
+            else:
+                should_wait = self.delay - (time.time() - self.last_send_time)
+                if should_wait > 0:
+                    time.sleep(should_wait)
+                try:
+                    ret = task.target()
+                    if task.callback is not None:
+                        task.callback(ret)
+                except Exception:
+                    logger.exception('Action发送线程出错')
+                finally:
+                    self.last_send_time = time.time()
+
+    def start(self):
+        # 强改内部方法以允许重复执行start方法, 暂时不知道这样做有什么后果
+        if not self.running:
+            self._started.is_set = lambda: False
+        else:
+            self._started.is_set = lambda: True
+        super().start()
+
+    def put_task(self, task: _Task):
+        assert isinstance(task, _Task)
+        self.tasks.put(task)
+        if not self.running:
+            self.start()
+
+
 class Action:
     def __init__(
-        self,
-        wxid: Optional[str] = None,
-        port: Optional[int] = None,
-        host: Optional[str] = None,
-        timeout: int = 20,
+            self,
+            wxid: Optional[str] = None,
+            port: Optional[int] = None,
+            host: Optional[str] = None,
+            timeout: int = 20,
+            is_use_queue: bool = False,
+            queue_delay: Union[int, float] = 1.4,
+
     ):
         self.host = utils.check_schema(host or jconfig.host)
         self.port = port or jconfig.port
@@ -39,813 +99,125 @@ class Action:
         )
         self.lock = threading.Lock()
 
+        self._use_queue = is_use_queue
+        self._send_thread = _SendThread(queue_delay)
+        self._send_thread.setDaemon(True)
+
     @property
-    def qq(self) -> int:
+    def wxid(self) -> int:
         if self._wxid == 0:
             self._wxid = self.getAllBots()[0]
         return self._wxid
 
     @classmethod
     def from_ctx(
-        cls, ctx: Union[EventMsg, FriendMsg, GroupMsg], timeout: int = 20
+            cls, ctx: Union[EventMsg, WeChatMsg], timeout: int = 20
     ) -> "Action":
         return cls(
-            ctx.CurrentQQ,
+            ctx.CurrentWxid,
             host=getattr(ctx, "_host", None),
             port=getattr(ctx, "_port", None),
             timeout=timeout,
         )
 
-    ############发送相关############
-    def sendFriendText(self, user: int, content: str) -> dict:
-        """发送好友文本消息"""
-        return self.post(
-            "SendMsgV2",
-            {
-                "ToUserUid": user,
-                "SendToType": 1,
-                "SendMsgType": "TextMsg",
-                "Content": content,
-            },
-        )
-
-    def sendFriendPic(
-        self,
-        user: int,
-        *,
-        picUrl: str = "",
-        picBase64Buf: str = "",
-        picMd5s: Optional[Union[str, List[str]]] = None,
-        content: str = "",
-        flashPic=False,
-    ):
-        """发送好友图片消息"""
-        assert any([picUrl, picBase64Buf, picMd5s]), "缺少参数"
-        if isinstance(picMd5s, str):
-            picMd5s = [picMd5s]
-        picMd5s = [  # type: ignore
-            {"FileId": 1, "PicMd5": picmd5, "PicSize": 1} for picmd5 in picMd5s or []
-        ]
-        return self.post(
-            "SendMsgV2",
-            {
-                "ToUserUid": user,
-                "SendToType": 1,
-                "SendMsgType": "PicMsg",
-                "Content": content,
-                "PicUrl": picUrl,
-                "PicBase64Buf": picBase64Buf,
-                "PicMd5s": picMd5s,
-                "FlashPic": flashPic,
-            },
-        )
-
-    def sendFriendVoice(
-        self, user: int, *, voiceUrl: str = "", voiceBase64Buf: str = ""
-    ):
-        """发送好友语音消息"""
-        assert any([voiceUrl, voiceBase64Buf]), "缺少参数"
-        return self.post(
-            "SendMsg",
-            {
-                "toUser": user,
-                "sendToType": 1,
-                "sendMsgType": "VoiceMsg",
-                "voiceUrl": voiceUrl,
-                "voiceBase64Buf": voiceBase64Buf,
-            },
-        )
-
-    def sendFriendXml(self, user: int, content: str) -> dict:
-        """发送好友Xml消息"""
-        return self.post(
-            "SendMsgV2",
-            {
-                "ToUserUid": user,
-                "SendToType": 1,
-                "SendMsgType": "XmlMsg",
-                "Content": content,
-            },
-        )
-
-    def sendFriendTeXiaoText(self, user: int, text: str) -> dict:
-        """发送好友特效文本消息"""
-        return self.post(
-            "SendMsgV2",
-            {
-                "ToUserUid": user,
-                "SendToType": 1,
-                "SendMsgType": "TeXiaoTextMsg",
-                "Content": text,
-            },
-        )
-
-    def sendGroupText(
-        self, group: int, content: str, atUser: Union[int, List[int]] = 0
+    # 改造完成
+    # ###########发送相关############
+    def sendWxText(
+            self, toUserName: str, content: str, atUser: Union[str, List[str]] = "", atAll: bool = False
     ) -> dict:
         """发送群组文本消息"""
-        if atUser != 0:
-            content = macro.atUser(atUser) + "\n" + content
-        return self.post(
-            "SendMsgV2",
+        if atAll:
+            content = "@所有人 " + content
+            atUser = "notify@all"
+        return self._post(
+            "SendMsg",
             {
-                "ToUserUid": group,
-                "SendToType": 2,
-                "SendMsgType": "TextMsg",
+                "ToUserName": toUserName,
+                "MsgType": 1,
                 "Content": content,
+                "AtUsers": atUser
             },
         )
 
-    def sendGroupPic(
-        self,
-        group: int,
-        *,
-        content: str = "",
-        picUrl: str = "",
-        picBase64Buf: str = "",
-        picMd5s: Optional[Union[str, List[str]]] = None,
-        flashPic=False,
-        atUser: Union[int, List[int]] = 0,
-    ) -> dict:
-        """发送群组图片消息"""
-        assert any([picUrl, picBase64Buf, picMd5s, picMd5s]), "缺少参数"
-        if atUser != 0:
-            content = macro.atUser(atUser) + "\n" + content
-        if isinstance(picMd5s, str):
-            picMd5s = [picMd5s]
-        picMd5s = [  # type: ignore
-            {"FileId": 1, "PicMd5": picmd5, "PicSize": 1} for picmd5 in picMd5s or []
-        ]
-        return self.post(
-            "SendMsgV2",
-            {
-                "ToUserUid": group,
-                "SendToType": 2,
-                "SendMsgType": "PicMsg",
-                "Content": content,
-                "PicUrl": picUrl,
-                "PicBase64Buf": picBase64Buf,
-                "PicMd5s": picMd5s,
-                "FlashPic": flashPic,
-            },
-        )
+    # 发送图片
+    def sendImg(
+            self,
 
-    def sendGroupMultiPic(
-        self,
-        group,
-        *items: str,
-        text: str = "",
-        atUser: Union[int, List[int]] = 0,
+            toUserName: str,
+            imageUrl: str = "",
+            imageBase64: str = "",
+            imagePath: str = "",
     ):
-        """发送群多图
-        items 支持填写图片http地址和base64，会自动判断类型
-        """
-        md5s = []
-        for item in items:
-            if item.startswith("http"):
-                info = self.getGroupPicInfo(url=item)
-            else:
-                info = self.getGroupPicInfo(base64=item)
-            md5s.append(info["PicInfo"]["PicMd5"])
-            time.sleep(0.5)
-        return self.sendGroupPic(group, content=text, atUser=atUser, picMd5s=md5s)
+        """发送图片消息"""
+        assert any([imageUrl, imageBase64, imagePath]), "缺少参数"
 
-    def sendGroupVoice(
-        self, group: int, *, voiceUrl: str = "", voiceBase64Buf: str = ""
-    ) -> dict:
-        """发送群组语音消息"""
-        assert any([voiceUrl, voiceBase64Buf]), "缺少参数"
-        return self.post(
-            "SendMsg",
-            {
-                "toUser": group,
-                "sendToType": 2,
-                "sendMsgType": "VoiceMsg",
-                "voiceUrl": voiceUrl,
-                "voiceBase64Buf": voiceBase64Buf,
-            },
-        )
-
-    def sendGroupXml(self, group: int, content: str) -> dict:
-        """发送群组Xml消息"""
-        return self.post(
-            "SendMsgV2",
-            {
-                "ToUserUid": group,
-                "SendToType": 2,
-                "SendMsgType": "XmlMsg",
-                "Content": content,
-            },
-        )
-
-    def sendGroupJson(self, group: int, content: str) -> dict:
-        """发送群组Json消息"""
-        return self.post(
-            "SendMsgV2",
-            {
-                "ToUserUid": group,
-                "SendToType": 2,
-                "SendMsgType": "JsonMsg",
-                "Content": content,
-            },
-        )
-
-    def sendGroupTeXiaoText(self, group: int, text: str) -> dict:
-        """发送群组特效文本消息"""
-        return self.post(
-            "SendMsgV2",
-            {
-                "ToUserUid": group,
-                "SendToType": 2,
-                "SendMsgType": "TeXiaoTextMsg",
-                "Content": text,
-            },
-        )
-
-    def sendPrivateText(self, user: int, group: int, content: str) -> dict:
-        """发送私聊文本消息"""
-        return self.post(
-            "SendMsgV2",
-            {
-                "ToUserUid": user,
-                "GroupID": group,
-                "SendToType": 3,
-                "SendMsgType": "TextMsg",
-                "Content": content,
-            },
-        )
-
-    def sendPrivateXml(self, user: int, group: int, content: str) -> dict:
-        """发送私聊Xml消息"""
-        return self.post(
-            "SendMsgV2",
-            {
-                "ToUserUid": user,
-                "GroupID": group,
-                "SendToType": 3,
-                "SendMsgType": "XmlMsg",
-                "Content": content,
-            },
-        )
-
-    def sendPrivateVoice(
-        self, user: int, group: int, *, voiceUrl: str = "", voiceBase64Buf: str = ""
-    ) -> dict:
-        assert any([voiceUrl, voiceBase64Buf]), "缺少参数"
-        return self.post(
-            "SendMsg",
-            {
-                "toUser": user,
-                "sendToType": 3,
-                "sendMsgType": "VoiceMsg",
-                "content": "",
-                "groupid": group,
-                "voiceUrl": voiceUrl,
-                "voiceBase64Buf": voiceBase64Buf,
-            },
-        )
-
-    def sendPrivatePic(
-        self,
-        user: int,
-        group: int,
-        content: str = "",
-        *,
-        picUrl: str = "",
-        picBase64Buf: str = "",
-        picMd5s: Optional[Union[str, List[str]]] = None,
-    ) -> dict:
-        """发送私聊图片消息"""
-        assert any([picUrl, picBase64Buf, picMd5s]), "缺少参数"
-        if isinstance(picMd5s, str):
-            picMd5s = [picMd5s]
-        picMd5s = [  # type: ignore
-            {"FileId": 1, "PicMd5": picmd5, "PicSize": 1} for picmd5 in picMd5s or []
-        ]
-        return self.post(
-            "SendMsgV2",
-            {
-                "ToUserUid": user,
-                "GroupID": group,
-                "SendToType": 3,
-                "SendMsgType": "PicMsg",
-                "Content": content,
-                "PicUrl": picUrl,
-                "PicBase64Buf": picBase64Buf,
-                "PicMd5s": picMd5s,
-            },
-        )
-
-    def sendPhoneText(self, content: str):
-        """给手机发文字"""
-        return self.post(
-            "SendMsgV2",
-            {"SendToType": 2, "SendMsgType": "PhoneMsg", "Content": content},
-        )
-
-    def replyGroupMsg(
-        self,
-        group: int,
-        content: str,
-        msgSeq: int,
-        msgTime: Optional[int] = None,
-        user: int = 0,
-        rawContent: str = "",
-    ):
-        """发送回复消息, 回复群消息
-        下面的原消息表示需要回复的消息
-        :param group: 原消息的群号
-        :param content: 回复内容
-        :param msgSeq: 原消息的msgSeq, 点击跳转到该条消息位置
-        :param msgTime: 原消息的msgTime, 如果不指定，默认为当前时间戳
-        :param user: 原消息的人的qq号，也可以是其他人，该用户收到消息会提示“有新回复”, 默认为0
-        :param rawContent: 原消息内容，可以任意指定，默认为空
-        """
-        return self.post(
-            "SendMsg",
-            {
-                "toUser": group,
-                "sendToType": 2,
-                "sendMsgType": "ReplayMsg",
-                "content": content,
-                "replayInfo": {
-                    "MsgSeq": msgSeq,
-                    "MsgTime": msgTime or int(time.time()),
-                    "UserID": user,
-                    "RawContent": rawContent,
-                },
-            },
-        )
-
-    def replyFriendMsg(
-        self,
-        user: int,
-        content: str,
-        msgSeq: int,
-        msgTime: Optional[int] = None,
-        rawContent: str = "",
-    ):
-        """发送回复消息, 回复好友消息
-        下面的原消息表示需要回复的消息
-        :param user: 原消息发送人
-        :param content: 回复内容
-        :param msgSeq: 原消息的msgSeq, 点击跳转到该条消息位置
-        :param msgTime: 原消息的msgTime, 如果不指定，默认为当前时间戳
-        :param rawContent: 原消息内容，可以任意指定，默认为空
-        """
-        return self.post(
-            "SendMsg",
-            {
-                "toUser": user,
-                "sendToType": 1,
-                "sendMsgType": "ReplayMsg",
-                "content": content,
-                "replayInfo": {
-                    "MsgSeq": msgSeq,
-                    "MsgTime": msgTime or int(time.time()),
-                    "UserID": user,
-                    "RawContent": rawContent,
-                },
-            },
-        )
-
-    def repostVideo2Group(self, group: int, forwordBuf: str) -> dict:
-        """转发视频到群聊
-        :param group: 群号
-        :param forwordBuf: 原视频的forwordBuf字段
-        """
-        return self.post(
-            "SendMsg",
-            {
-                "toUser": group,
-                "sendToType": 2,
-                "sendMsgType": "ForwordMsg",
-                "forwordBuf": forwordBuf,
-                "forwordField": 19,
-            },
-        )
-
-    def getVideoURL(self, group: int, videoMD5: str, videoURL: str) -> dict:
-        """获取视频链接
-        :param group: 群号
-        :param videoMD5: 视频的 MD5 值，可以从上报的消息中获得
-        :param videoURL: 上报的消息中传给的 url 值
-        """
-        return self.post(
-            "PttCenterSvr.ShortVideoDownReq",
-            {"GroupID": group, "VideoUrl": videoURL, "VideoMd5": videoMD5},
-        )
-
-    def getFriendFileURL(self, fileID: str) -> dict:
-        """获取好友文件链接
-        :param fileID: 文件 ID，可由上报的消息中获得
-        """
-        return self.post(
-            "OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200",
-            {"FileID": fileID},
-        )
-
-    def getGroupFileURL(self, group: int, fileID: str) -> dict:
-        """获取群文件链接
-        :param group: 群号
-        :param fileID: 文件 ID，可由上报的消息中获得
-        """
-        return self.post(
-            "OidbSvc.0x6d6_2",
-            {"GroupID": group, "FileID": fileID},
-        )
-
-    def repostVideo2Friend(self, user: int, forwordBuf: str) -> dict:
-        """转发视频到好友
-        :param user: 好友QQ
-        :param forwordBuf: 原视频的forwordBuf字段
-        """
-        return self.post(
-            "SendMsg",
-            {
-                "toUser": user,
-                "sendToType": 1,
-                "sendMsgType": "ForwordMsg",
-                "forwordBuf": forwordBuf,
-                "forwordField": 19,
-            },
-        )
-
-    def poke(self, user: int, group=0):
-        """戳一戳，未设置群ID就是戳好友"""
-        payload = {"UserID": user, "GroupID": group}
-        if group == 0:
-            payload["Type"] = 0
-        else:
-            payload["Type"] = 1
-        return self.post("OidbSvc.0xed3_1", payload)
-
-    def groupJoinAuth(self, ctx: EventMsg, cmd=None):
-        """
-        :param ctx: 事件EventMsg, 类型不匹配将报错
-        :param cmd: True:同意进群,False:拒绝,None:忽略
-        """
-        join_group_info = eventParser.group_adminsysnotify(ctx)
-        assert join_group_info, "事件类型不匹配"
-        return self.post(
-            "AnswerInviteGroup",
-            {
-                "Seq": join_group_info.Seq,
-                "Who": join_group_info.Who,
-                "Flag_7": join_group_info.Flag_7,
-                "Flag_8": join_group_info.Flag_8,
-                "GroupId": join_group_info.GroupId,
-                "Action": {True: 11, False: 12, None: 14}[
-                    cmd
-                ],  # 11 agree , 14 忽略 , 12/21 disagree
-            },
-        )
-
-    def uploadGroupFile(
-        self,
-        group: int,
-        fileURL: str = "",
-        fileBase64: str = "",
-        filePath: str = "",
-        fileName: str = "",
-        fileType: str = "",
-        notify: bool = True,
-    ) -> dict:
-        """上传群文件
-        :param group: 群号
-        :param fileURL: 文件网络地址, 和fileBase64二选一
-        :param fileBase64: 文件base64编码, 和fileURL二选一
-        :param filePath: 文件路径，注意该路径要确保机器人服务端能够访问到，并且该项设置后，fileName和fileType参数将无效
-        :param fileName: 文件名(需包含拓展名)，如果不传则随机生成并且如果是使用URL上传则会尝试自动推测文件类型
-        :param fileType: 文件的后缀名，如果指定了，会自动加在文件名(fileName)后面, 如 .txt 或 txt
-        :param notify: 是否通知
-        """
-        # 将filePath作最高优先级，因为通过路径上传，fileName字段无效
-        if not filePath:
-            if not fileName:
-                fileName = str(uuid.uuid4())
-                # guess extension by url
-                if fileURL:
-                    try:
-                        with httpx.stream("GET", fileURL, timeout=5) as resp:
-                            content_type = resp.headers["content-type"]
-                            extension = mimetypes.guess_extension(content_type)
-                            if extension is not None:
-                                fileName = fileName + extension
-                    except Exception:
-                        pass
-            if fileType:
-                if fileType.startswith("."):
-                    fileName = fileName + fileType
-                else:
-                    fileName = fileName + "." + fileType
-        payload = {
-            "ToUserUid": group,
-            "SendMsgType": "UploadGroupFile",
-            "FileName": fileName,
-            "Notify": notify,
+        arg = {
+            "ToUserName": toUserName,
         }
-        if filePath:
-            payload.update({"FilePath": filePath})
-        elif fileURL:
-            payload.update({"FileUrl": fileURL})
-        elif fileBase64:
-            payload.update({"FileBase64": fileBase64})
-        else:
-            raise Exception("fileURL, fileBase64, filePath 必须给定其中一个")
-        return self.post("SendMsgV2", payload)
+        if imagePath != "":
+            arg['ImageUrl'] = imageUrl
+        elif imageBase64 != "":
+            arg['ImageBase64'] = imageBase64
+        elif imagePath != "":
+            arg['ImagePath'] = imagePath
 
-    def openRedBag(self, redBagInfo: dict):
-        """打开红包
-
-        :param redBagInfo: 红包信息, ctx.RedBaginfo
-        """
-        return self.post("OpenRedBag", redBagInfo)
-
-    ############获取############
-    def getCookies(self) -> dict:
-        """获取QQ相关cookie"""
-        return self.get("GetUserCook")
-
-    def getUserInfo(self, user: int) -> dict:
-        """获取用户信息昵称头像等"""
-        return self.post("GetUserInfo", {"UserID": user})
-
-    def getSummaryCard(self, user: int) -> dict:
-        """获取企鹅卡片资料"""
-        return self.post("SummaryCard.ReqSummaryCard", {"UserID": user})
-
-    def getUserList(self) -> List[dict]:
-        """获取好友列表"""
-        friend_list = []
-        start_index = 0
-        while True:
-            data = self.post("GetQQUserList", {"StartIndex": start_index})
-            if "Friendlist" not in data:
-                break
-            friend_list.extend(data["Friendlist"])
-            if len(friend_list) >= int(data.get("Totoal_friend_count", 0)):  # 这里有个拼写错误
-                break
-            if "GetfriendCount" not in data:
-                break
-            start_index += int(
-                data.get("GetfriendCount", 999999)
-            )  # 设置 999999 为了在 API 坏了的情况下能跳出循环
-        return friend_list
-
-    def getGroupList(self) -> List[dict]:
-        """获取群列表"""
-        next_token = ""
-        group_list = []
-        while True:
-            data = self.post("GetGroupList", {"NextToken": next_token})
-            if "TroopList" not in data:
-                break
-            group_list.extend(data["TroopList"])
-            next_token = data.get("NextToken", "")
-            if not next_token:
-                break
-        return group_list
-
-    def getGroupMembers(self, group: int) -> List[dict]:
-        """获取群成员列表"""
-        members = []
-        lastUin = 0
-        while True:
-            data = self.post(
-                "GetGroupUserList", {"GroupUin": group, "LastUin": lastUin}
-            )
-            if "MemberList" in data:
-                members.extend(data["MemberList"])
-            if "LastUin" not in data or data["LastUin"] == 0:
-                break
-            lastUin = data["LastUin"]
-            time.sleep(0.6)
-        return members
-
-    def getGroupAdminList(self, group: int, include_owner=True) -> List[dict]:
-        """获取群管理员列表
-        :param group: 群号
-        :param include_owner: 是否包括群主
-        """
-        members = self.getGroupMembers(group)
-        if include_owner:
-            # 获取群主id
-            owner = 0
-            for groupInfo in self.getGroupList():
-                if groupInfo["GroupId"] == group:
-                    owner = groupInfo["GroupOwner"]
-                    break
-            admins = [
-                member
-                for member in members
-                if member["GroupAdmin"] == 1 or member["MemberUin"] == owner
-            ]
-        else:
-            admins = [member for member in members if member["GroupAdmin"] == 1]
-        return admins
-
-    def getClusterInfo(self) -> dict:
-        """获取当前集群信息"""
-        return self.get("", path="/v1/ClusterInfo", params={"isShow": 1, "qq": 1})
-
-    ############操作############
-    def setUniqueTitle(self, user: int, group: int, title: str) -> dict:
-        """设置群成员头衔"""
-        return self.post(
-            "OidbSvc.0x8fc_2",
-            {"GroupID": group, "UserID": user, "NewTitle": title},
+        return self._post(
+            "SendImage",
+            arg,
         )
 
-    def modifyGroupCard(self, user: int, group: int, nick: str) -> dict:
-        """修改群名片"""
-        return self.post(
-            "ModifyGroupCard", {"UserID": user, "GroupID": group, "NewNick": nick}
-        )
+    def sendCdnImg(
+            self,
 
-    def shutUserUp(self, groupID: int, userid: int, ShutTime: int) -> dict:
-        """禁言用户(禁言时间单位为分钟 ShutTime=0 取消禁言)"""
-        return self.post(
-            "OidbSvc.0x570_8",
-            {
-                "GroupID": groupID,
-                "ShutUpUserID": userid,
-                "ShutTime": ShutTime,
-            },
-        )
-
-    def shutAllUp(self, group: int, switch: int = 1):
-        """全体禁言
-        :param switch: 1 开启; 0 关闭, 默认为1即开启全体禁言
-        """
-        return self.post(
-            "OidbSvc.0x89a_0",
-            {"GroupID": group, "Switch": 0 if switch == 0 else 1},
-        )
-
-    def setGroupAnnounce(
-        self,
-        group: int,
-        text: str,
-        pinned: bool = False,
-        title: str = "",
-        typ: bool = True,
+            toUserName: str,
+            xml: str,
     ):
-        """设置群公告
-        :param group: 群号
-        :param text: 内容
-        :param pinned: 是否置顶
-        :param title: 标题,可以空
-        :param typ: 是否发送新成员
-        """
-        return self.post(
-            path="/v1/Group/Announce",
-            funcname="",
-            payload={
-                "GroupID": group,
-                "Title": title,
-                "Text": text,
-                "Pinned": 1 if pinned else 0,
-                "Type": 20 if typ else 10,  # 20 发给新成员, 10 弹窗
-            },
+        """发送图片消息"""
+
+        arg = {
+            "ToUserName": toUserName,
+            "XmlStr": xml,
+        }
+
+        return self._post(
+            "SendCdnImage",
+            arg,
         )
 
-    def likeUser(self, user: int) -> dict:
-        """给某人点赞
-        :param user: 用户QQ号
-        """
-        return self.post("QQZan", {"UserID": user})
+    def sendEmoji(
+            self,
 
-    def toggleGroupAdmin(self, user: int, group: int, flag=1) -> dict:
-        """设置和取消群管理员
-        :param user: 用户QQ
-        :param group: 群号
-        :param flag: 1 或 0, 1表示设置为管理员; 0 表示取消管理员, 默认为1
-        """
-        return self.post(
-            "OidbSvc.0x55c_1",
-            {"GroupID": group, "UserID": user, "Flag": 0 if flag == 0 else 1},
+            toUserName: str,
+            EmojiMd5: str,
+            EmojiLen: int = 0,
+    ):
+        """发送好友图片消息"""
+
+        arg = {
+            "ToUserName": toUserName,
+            "EmojiMd5": EmojiMd5,
+            "EmojiLen": EmojiLen
+        }
+
+        return self._post(
+            "SendEmoji",
+            arg,
         )
-
-    def revokeGroupMsg(self, group: int, msgSeq: int, msgRandom: int) -> dict:
-        """撤回群消息
-        :param group: 群号
-        :param msgSeq: 消息msgSeq
-        :param msgRandom: 消息msgRandom
-        """
-        return self.post(
-            "RevokeMsg", {"GroupID": group, "MsgSeq": msgSeq, "MsgRandom": msgRandom}
-        )
-
-    def revoke(self, ctx: GroupMsg):
-        """撤回群消息"""
-        return self.revokeGroupMsg(ctx.FromGroupId, ctx.MsgSeq, ctx.MsgRandom)
-
-    def inviteUserJoinGroup(self, group: int, user: int) -> dict:
-        """拉人入群
-        :param group: 哪个群?
-        :param user: 拉谁?
-        """
-        return self.post(
-            "GroupMgr",
-            {"ActionType": 8, "GroupID": group, "ActionUserID": user, "Content": ""},
-        )
-
-    def joinGroup(self, group: int, content: str = "") -> dict:
-        """加入群聊
-        :param group: 哪个群?
-        :param content: 加群理由
-        """
-        return self.post(
-            "GroupMgr",
-            {"ActionType": 1, "GroupID": group, "ActionUserID": 0, "Content": content},
-        )
-
-    def exitGroup(self, group: int) -> dict:
-        """退出群聊
-        :param group: 哪个群?
-        """
-        return self.post(
-            "GroupMgr",
-            {"ActionType": 2, "GroupID": group, "ActionUserID": 0, "Content": ""},
-        )
-
-    def driveUserAway(self, group: int, user: int) -> dict:
-        """移出群聊
-        :param group: 哪个群?
-        :param user:把谁踢出去?
-        """
-        return self.post(
-            "GroupMgr",
-            {"ActionType": 3, "GroupID": group, "ActionUserID": user, "Content": ""},
-        )
-
-    def refreshKeys(self) -> dict:
-        """刷新key二次登陆"""
-        return self.get("", path="/v1/RefreshKeys")
-
-    def dealFriend(self, ctx: EventMsg, cmd=None) -> dict:
-        """处理好友请求
-        :param ctx: 事件EventMsg, 类型不匹配将报错
-        :param cmd: True:同意,False:拒绝,None:忽略
-        """
-        friend_add_info = eventParser.friend_add(ctx)
-        assert friend_add_info, "事件类型不匹配"
-        return self.post(
-            "DealFriend",
-            {
-                "UserID": friend_add_info.UserID,
-                "FromType": friend_add_info.FromType,
-                "Type": friend_add_info.Type,
-                "Field_3": friend_add_info.Field_3,
-                "Field_8": friend_add_info.Field_8,
-                "Content": friend_add_info.Content,
-                "FromGroupId": friend_add_info.FromGroupId,
-                "FromGroupName": friend_add_info.FromGroupName,
-                "Action": {True: 2, False: 3, None: 1}[cmd],  # 1忽略2同意3拒绝
-            },
-        )
-
-    def logout(self, flag=False) -> dict:
-        """退出指定QQ
-        :param flag: 是否删除设备信息文件
-        """
-        return self.post("LogOut", {"Flag": flag})
-
-    def getGroupPicInfo(self, url: str = "", base64: str = ""):
-        """上传群图片获取图片信息
-        :param url: 图片链接
-        :param base64: 图片base64
-        """
-        assert any([url, base64]), "缺少参数"
-        return self.post(
-            "", {"PicUrl": url, "PicBase64Buf": base64}, path="/v1/GetGroupPicInfo"
-        )
-
-    def updateAvatar(self, url: str):
-        """上传头像
-        :param url: 图片链接
-        """
-        return self.post("", {"HDIMGUrl": url}, path="/v1/SelfHDIMG")
-
-    def getAllBots(self) -> List[int]:
-        """获取OPQ登陆的所有机器人QQ号"""
-        return [i["QQ"] for i in self.getClusterInfo()["QQUsers"]]
 
     ############################################################################
-    def baseRequest(
-        self,
-        method: str,
-        funcname: str,
-        path: str,
-        payload: Optional[dict] = None,
-        params: Optional[dict] = None,
+    def _baseRequest(
+            self,
+            method: str,
+            funcname: str,
+            path: str,
+            payload: Optional[dict] = None,
+            params: Optional[dict] = None,
     ) -> dict:
         """基础请求方法, 提供部分提示信息，出错返回空字典，其他返回服务端响应结果"""
         params = params or {}
         params["funcname"] = funcname
-        if not params.get("qq"):
-            params["qq"] = self.qq
+        if not params.get("wxid"):
+            params["wxid"] = self.wxid
 
         # 发送请求
         try:
@@ -900,26 +272,43 @@ class Action:
 
         return data
 
-    def post(
-        self,
-        funcname: str,
-        payload: dict,
-        params: Optional[dict] = None,
-        path: str = "/v1/LuaApiCaller",
-    ) -> dict:
+    def _post(
+            self,
+            funcname: str,
+            payload: dict,
+            params: Optional[dict] = None,
+            path: str = "/v1/LuaApiCaller",
+    ) -> Union[dict, None]:
         """封装常用的post操作"""
-        return self.baseRequest(
+        job = functools.partial(
+            self._baseRequest,
             "POST", funcname=funcname, path=path, payload=payload, params=params
         )
+        functools.update_wrapper(job, self._baseRequest)
+        if self._use_queue:
+            self._send_thread.put_task(
+                _Task(target=job))
+            return None
+        return job()
 
-    def get(
-        self,
-        funcname: str,
-        params: Optional[dict] = None,
-        path: str = "/v1/LuaApiCaller",
-    ) -> dict:
+    def _get(
+            self,
+            funcname: str,
+            params: Optional[dict] = None,
+            path: str = "/v1/LuaApiCaller",
+    ) -> Union[dict, None]:
         """封装get操作"""
-        return self.baseRequest("GET", funcname=funcname, path=path, params=params)
+
+        job = functools.partial(
+            self._baseRequest,
+            "GET", funcname=funcname, path=path, params=params
+        )
+        functools.update_wrapper(job, self._baseRequest)
+        if self._use_queue:
+            self._send_thread.put_task(
+                _Task(target=job))
+            return None
+        return job()
 
     def release_lock(self):
         try:

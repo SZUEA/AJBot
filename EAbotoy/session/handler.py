@@ -4,10 +4,10 @@ import traceback
 from typing import Callable, List, NoReturn, Optional, Union
 
 from ..log import logger
-from ..model import FriendMsg, GroupMsg
 from .base import Session, SessionController
 from .globals import _ctx, _session
 from .prompt import Prompt
+from ..model import WeChatMsg
 
 FILTER_SUCCESS = "filter successfully"
 
@@ -79,13 +79,13 @@ class SessionHandler:
         """
         self.handler = handler
 
-    def message_receiver(self, msg_ctx: Union[GroupMsg, FriendMsg]):
+    def message_receiver(self, msg_ctx: Union[WeChatMsg]):
         """消息接收函数"""
         # 过滤机器人自身消息
-        if msg_ctx.CurrentQQ == (
-            msg_ctx.FromUserId if isinstance(msg_ctx, GroupMsg) else msg_ctx.FromUin
-        ):
-            return
+        # if msg_ctx.CurrentWxid == (
+        #     msg_ctx.FromUserId if isinstance(msg_ctx, GroupMsg) else msg_ctx.FromUin
+        # ):
+        #     return
 
         # 如果session存在，则需要对该消息进行各种操作
         if self.sc.session_existed(msg_ctx, self.single_user):
@@ -110,9 +110,7 @@ class SessionHandler:
             if not hasattr(session, "_condition_handlers"):
                 setattr(session, "_condition_handlers", self.condition_handlers.copy())
             for c_h in [
-                c_h
-                for c_h in getattr(session, "_condition_handlers")
-                if not c_h.retired
+                c_h for c_h in getattr(session, "_condition_handlers") if not c_h.retired
             ]:  # type: ConditionHandler
                 for need_key in c_h.keys:
                     if not session.has(need_key):
@@ -203,16 +201,9 @@ class SessionHandler:
         finally:
             raise FinishException
 
-    def receive_group_msg(self) -> "SessionHandler":
-        """接收该插件的群消息"""
+    def receive_wx_msg(self) -> "SessionHandler":
+        """接收该插件的wx消息"""
         inspect.currentframe().f_back.f_globals.update(  # type: ignore
-            receive_group_msg=self.message_receiver
-        )
-        return self
-
-    def receive_friend_msg(self) -> "SessionHandler":
-        """接收该插件的好友消息"""
-        inspect.currentframe().f_back.f_globals.update(  # type: ignore
-            receive_friend_msg=self.message_receiver
+            receive_session_wx_msg=self.message_receiver
         )
         return self

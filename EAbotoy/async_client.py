@@ -10,7 +10,7 @@ from socketio.exceptions import ConnectionError as SioConnectionError
 
 from EAbotoy.client import Botoy
 from EAbotoy.log import logger
-from EAbotoy.model import EventMsg, FriendMsg, GroupMsg
+from EAbotoy.model import EventMsg, WeChatMsg
 
 
 class AsyncBotoy(Botoy):
@@ -20,12 +20,12 @@ class AsyncBotoy(Botoy):
 
         return handler
 
-    async def _context_handler(self, context: Union[FriendMsg, GroupMsg, EventMsg]):
+    async def _context_handler(self, context: Union[WeChatMsg, EventMsg]):
         passed_context = self._context_checker(context)
         if passed_context:
             return await self._context_distributor(passed_context)
 
-    async def _context_distributor(self, context: Union[FriendMsg, GroupMsg, EventMsg]):
+    async def _context_distributor(self, context: Union[WeChatMsg, EventMsg]):
         coros = []
 
         for receiver in self._get_context_receivers(context):
@@ -52,9 +52,10 @@ class AsyncBotoy(Botoy):
 
         sio.event(self._connect)
         sio.event(self._disconnect)
-        sio.on("OnGroupMsgs", self._group_msg_handler)
-        sio.on("OnFriendMsgs", self._friend_msg_handler)
-        sio.on("OnEvents", self._event_handler)
+        # sio.on("OnGroupMsgs", self._group_msg_handler)
+        # sio.on("OnFriendMsgs", self._friend_msg_handler)
+        sio.on("OnWeChatEvents", self._event_handler)
+        sio.on("OnWeChatMsgs", self._wx_msg_handler)
 
         try:
             delay = 1

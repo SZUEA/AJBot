@@ -1,4 +1,4 @@
-from ..model import FriendMsg, GroupMsg
+from ..model import WeChatMsg
 
 
 def from_botself(func=None):
@@ -6,13 +6,8 @@ def from_botself(func=None):
     if func is None:
         return from_botself
 
-    def inner(ctx):
-        assert isinstance(ctx, (GroupMsg, FriendMsg))
-        if isinstance(ctx, GroupMsg):
-            userid = ctx.FromUserId
-        else:
-            userid = ctx.FromUin
-        if userid == ctx.CurrentQQ:
+    def inner(ctx: WeChatMsg):
+        if ctx.ActionUserName == ctx.CurrentWxid:
             return func(ctx)
         return None
 

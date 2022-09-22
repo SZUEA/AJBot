@@ -27,8 +27,8 @@ def dict2tree(data: dict) -> dict:
 
 
 def lookup(
-    tree: dict,
-    key: Optional[str] = None,
+        tree: dict,
+        key: Optional[str] = None,
 ):
     if not key:
         return tree

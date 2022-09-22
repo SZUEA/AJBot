@@ -1,4 +1,3 @@
-from ..model import GroupMsg
 
 
 def ignore_these_groups(*groups):
@@ -7,8 +6,8 @@ def ignore_these_groups(*groups):
     def deco(func):
         def inner(ctx):
             nonlocal groups
-            assert isinstance(ctx, GroupMsg)
-            from_group = ctx.FromGroupId
+
+            from_group = ctx.FromUserName
             if from_group not in groups:
                 return func(ctx)
             return None

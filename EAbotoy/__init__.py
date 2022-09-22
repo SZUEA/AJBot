@@ -14,8 +14,6 @@ from .collection import MsgTypes as MsgTypes
 from .config import jconfig as jconfig
 from .log import logger as logger
 from .model import EventMsg as EventMsg
-from .model import FriendMsg as FriendMsg
-from .model import GroupMsg as GroupMsg
 from .runner import run as run
 from .sugar import Picture as Picture
 from .sugar import S as S

@@ -10,7 +10,7 @@ def need_action(func=None):
 
     async def inner(ctx):
         action = AsyncAction(
-            ctx.CurrentQQ,
+            ctx.CurrentWxid,
             host=getattr(ctx, "_host", None),
             port=getattr(ctx, "_port", None),
         )

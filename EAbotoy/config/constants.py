@@ -12,7 +12,7 @@ from typing import List
 # | webhook_timeout  | webhook等待响应的延时              | 20             |
 
 DEFAULT_HOST = os.getenv("BOTOY_HOST") or "http://127.0.0.1"
-DEFAULT_PORT = int(os.getenv("BOTOY_PORT") or 8888)
+DEFAULT_PORT = int(os.getenv("BOTOY_PORT") or 8898)
 DEFAULT_GROUP_BLACKLIST: List[int] = []
 DEFAULT_FRIEND_BLACKLIST: List[int] = []
 DEFAULT_BLOCKED_USERS: List[int] = []

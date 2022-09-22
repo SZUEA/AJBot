@@ -1,4 +1,4 @@
-from ..model import FriendMsg, GroupMsg
+from ..model import WeChatMsg
 
 
 def these_msgtypes(*msgtypes):
@@ -7,12 +7,11 @@ def these_msgtypes(*msgtypes):
     """
 
     def deco(func):
-        def inner(ctx):
-            assert isinstance(ctx, (GroupMsg, FriendMsg))
+        def inner(ctx: WeChatMsg):
+            assert isinstance(ctx, WeChatMsg)
             if ctx.MsgType in msgtypes:
                 return func(ctx)
             return None
-
         return inner
 
     return deco
