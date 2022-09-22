@@ -26,12 +26,11 @@ def admin_manage(ctx: WeChatMsg):
     if ctx.ActionUserName != jconfig.master:
         return
     if 'add admin' in ctx.Content and ctx.isAtMsg:
-        res = '上面用户成功添加为admin:\n'
+        res = '上面用户成功添加为admin'
         user_ls = ctx.atUserIds
         if user_ls is None or len(user_ls) == 0:
             return
         for _qq in user_ls:
-            # res += f'[GETUSERNICK({_qq})] √\n'
             if is_bot_master(ctx.CurrentWxid, _qq):
                 continue
             from plugins.bot_reply import DB
