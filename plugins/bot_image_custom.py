@@ -177,8 +177,7 @@ def mainEntrance(msg, userQQ, userGroup, bot, ctx):
                 userGroup=userGroup,
                 msg=sendMsg,
                 bot=bot,
-                model=Model.SEND_AT,
-                atQQ=ctx.atUserNames[0],
+                model=Model.SEND_DEFAULT,
             )
             return
 
