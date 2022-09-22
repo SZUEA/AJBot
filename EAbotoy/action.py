@@ -81,7 +81,7 @@ class Action:
             port: Optional[int] = None,
             host: Optional[str] = None,
             timeout: int = 20,
-            is_use_queue: bool = False,
+            is_use_queue: bool = True,
             queue_delay: Union[int, float] = 1.4,
 
     ):
@@ -129,6 +129,7 @@ class Action:
         if atAll:
             content = "@所有人 " + content
             atUser = "notify@all"
+
         return self._post(
             "SendMsg",
             {

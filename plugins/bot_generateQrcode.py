@@ -2,8 +2,8 @@
 import base64
 import io
 
-from EAbotoy import GroupMsg
 from EAbotoy.decorators import ignore_botself, startswith, these_msgtypes
+from EAbotoy.model import WeChatMsg
 from EAbotoy.sugar import Picture
 
 try:
@@ -20,7 +20,6 @@ def gen_qrcode(text: str) -> str:
 
 
 @ignore_botself
-@these_msgtypes("TextMsg")
-@startswith("生成二维码")
-def receive_group_msg(ctx: GroupMsg):
-    Picture(pic_base64=gen_qrcode(ctx.Content[5:]))
+@startswith("测码")
+def receive_wx_msg(ctx: WeChatMsg):
+    Picture(pic_base64=gen_qrcode(ctx.Content[2:]))

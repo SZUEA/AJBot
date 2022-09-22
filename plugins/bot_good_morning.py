@@ -5,10 +5,12 @@ import os
 import random
 from enum import Enum
 
-from EAbotoy import Action, GroupMsg
+from EAbotoy import Action
 from EAbotoy.collection import MsgTypes
 from EAbotoy.decorators import ignore_botself, these_msgtypes
 from dateutil.parser import parse
+
+from EAbotoy.model import WeChatMsg
 
 try:
     import ujson as json
@@ -27,12 +29,13 @@ goodMorningInstructionSet = ["早", "早安", "哦哈哟", "ohayo", "ohayou", "�
 # 晚安指令
 goodNightInstructionSet = ["晚", "晚安", "哦呀斯密", "oyasumi", "oyasimi", "睡了", "睡觉了"]
 
+
 # ==========================================
 
 
 @ignore_botself
-def receive_group_msg(ctx: GroupMsg):
-    userGroup = ctx.FromGroupId
+def receive_wx_msg(ctx: WeChatMsg):
+    userGroup = ctx.FromUserName
 
     if Tools.commandMatch(userGroup, blockGroupNumber):
         return
@@ -40,16 +43,15 @@ def receive_group_msg(ctx: GroupMsg):
     if not Tools.textOnly(ctx.MsgType):
         return
 
-    userQQ = ctx.FromUserId
+    userQQ = ctx.ActionUserName
     msg = ctx.Content
-    nickname = ctx.FromNickName
+    nickname = ctx.ActionNickName
     bot = Action(ctx.CurrentWxid)
 
     mainProgram(bot, userQQ, userGroup, msg, nickname)
 
 
 class Model(Enum):
-
     ALL = "_all"
 
     BLURRY = "_blurry"
@@ -60,7 +62,6 @@ class Model(Enum):
 
 
 class Status(Enum):
-
     SUCCESS = "_success"
 
     FAILURE = "_failure"
@@ -123,18 +124,18 @@ class Tools:
 
     @classmethod
     def sendPictures(cls, userGroup, picPath, bot: Action):
-        bot.sendGroupPic(userGroup, picBase64Buf=cls.base64conversion(picPath))
+        bot.sendImg(userGroup, imageBase64=cls.base64conversion(picPath))
 
     @staticmethod
     def sendText(userGroup, msg, bot: Action, model=Model.SEND_DEFAULT, atQQ=""):
         if msg not in ("", Status.FAILURE):
             if model == Model.SEND_DEFAULT:
-                bot.sendGroupText(userGroup, content=str(msg))
+                bot.sendWxText(userGroup, content=str(msg))
             if model == Model.SEND_AT:
                 if atQQ == "":
                     raise Exception("没有指定 at 的人！")
-                at = f"[ATUSER({atQQ})]\n"
-                bot.sendGroupText(userGroup, content=at + str(msg))
+                at = f"{atQQ}\n"
+                bot.sendWxText(userGroup, content=at + str(msg))
 
     @staticmethod
     def commandMatch(msg, commandList, model=Model.ALL):
@@ -155,7 +156,7 @@ class Tools:
 
     @staticmethod
     def atQQ(userQQ):
-        return f"[ATUSER({userQQ})]\n"
+        return f"{userQQ}\n"
 
 
 class Utils:
@@ -206,7 +207,7 @@ class Utils:
 
     @classmethod
     def extractConfigurationInformationAccordingToSpecifiedParameters(
-        cls, parameter, model
+            cls, parameter, model
     ):
         return (cls.readConfiguration(model))[parameter]
 
@@ -266,7 +267,6 @@ def mainProgram(bot, userQQ, userGroup, msg, nickname):
 
 
 class GoodMorningModel(Enum):
-
     MORNING_MODEL = "MORNING_MODEL"
 
     NIGHT_MODEL = "NIGHT_MODEL"
@@ -346,7 +346,8 @@ def addToCheckInPoolAndGetRanking(userQQ, userGroup, model):
 def goodMorningInformation(userQQ, userGroup, nickname):
     # Check if registered
     registered = Utils.userInformationReading(userQQ)
-    send = Tools.atQQ(userQQ)
+    # send = Tools.atQQ(userQQ)
+    send = ''
     if registered == Status.FAILURE:
         # registered
         userRegistration(userQQ, GoodMorningModel.MORNING_MODEL.value)
@@ -355,13 +356,13 @@ def goodMorningInformation(userQQ, userGroup, nickname):
             userQQ, userGroup, GoodMorningModel.MORNING_MODEL.value
         )
         send += (
-            Utils.extractRandomWords(GoodMorningModel.MORNING_MODEL.value, nickname)
-            + "\n"
-            + (
-                Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
-                    "suffix", GoodMorningModel.MORNING_MODEL.value
-                )
-            ).replace(r"{number}", str(rank))
+                Utils.extractRandomWords(GoodMorningModel.MORNING_MODEL.value, nickname)
+                + "\n"
+                + (
+                    Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
+                        "suffix", GoodMorningModel.MORNING_MODEL.value
+                    )
+                ).replace(r"{number}", str(rank))
         )
         return send
     # Already registered
@@ -379,13 +380,13 @@ def goodMorningInformation(userQQ, userGroup, nickname):
                 userQQ, userGroup, GoodMorningModel.MORNING_MODEL.value
             )
             send += (
-                Utils.extractRandomWords(GoodMorningModel.MORNING_MODEL.value, nickname)
-                + "\n"
-                + (
-                    Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
-                        "suffix", GoodMorningModel.MORNING_MODEL.value
-                    )
-                ).replace(r"{number}", str(rank))
+                    Utils.extractRandomWords(GoodMorningModel.MORNING_MODEL.value, nickname)
+                    + "\n"
+                    + (
+                        Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
+                            "suffix", GoodMorningModel.MORNING_MODEL.value
+                        )
+                    ).replace(r"{number}", str(rank))
             )
             return send
     if registered["model"] == GoodMorningModel.NIGHT_MODEL.value:
@@ -407,10 +408,10 @@ def goodMorningInformation(userQQ, userGroup, nickname):
                 userQQ, userGroup, GoodMorningModel.MORNING_MODEL.value
             )
             send += (
-                Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
-                    "suffix", GoodMorningModel.MORNING_MODEL.value
-                )
-            ).replace(r"{number}", str(rank)) + "\n"
+                        Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
+                            "suffix", GoodMorningModel.MORNING_MODEL.value
+                        )
+                    ).replace(r"{number}", str(rank)) + "\n"
             # Calculate precise sleep time
             sleepPreciseTime = TimeUtils.calculateTheElapsedTimeCombination(
                 registered["accurateTime"]
@@ -441,13 +442,13 @@ def goodMorningInformation(userQQ, userGroup, nickname):
                 userQQ, userGroup, GoodMorningModel.MORNING_MODEL.value
             )
             send += (
-                Utils.extractRandomWords(GoodMorningModel.MORNING_MODEL.value, nickname)
-                + "\n"
-                + (
-                    Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
-                        "suffix", GoodMorningModel.MORNING_MODEL.value
-                    )
-                ).replace(r"{number}", str(rank))
+                    Utils.extractRandomWords(GoodMorningModel.MORNING_MODEL.value, nickname)
+                    + "\n"
+                    + (
+                        Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
+                            "suffix", GoodMorningModel.MORNING_MODEL.value
+                        )
+                    ).replace(r"{number}", str(rank))
             )
         return send
     return Status.FAILURE
@@ -456,7 +457,9 @@ def goodMorningInformation(userQQ, userGroup, nickname):
 def goodNightInformation(userQQ, userGroup, nickname):
     # Check if registered
     registered = Utils.userInformationReading(userQQ)
-    send = Tools.atQQ(userQQ)
+    # send = Tools.atQQ(userQQ)
+    send = ''
+
     if registered == Status.FAILURE:
         # registered
         userRegistration(userQQ, GoodMorningModel.NIGHT_MODEL.value)
@@ -465,13 +468,13 @@ def goodNightInformation(userQQ, userGroup, nickname):
             userQQ, userGroup, GoodMorningModel.NIGHT_MODEL.value
         )
         send += (
-            Utils.extractRandomWords(GoodMorningModel.NIGHT_MODEL.value, nickname)
-            + "\n"
-            + (
-                Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
-                    "suffix", GoodMorningModel.NIGHT_MODEL.value
-                )
-            ).replace(r"{number}", str(rank))
+                Utils.extractRandomWords(GoodMorningModel.NIGHT_MODEL.value, nickname)
+                + "\n"
+                + (
+                    Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
+                        "suffix", GoodMorningModel.NIGHT_MODEL.value
+                    )
+                ).replace(r"{number}", str(rank))
         )
         return send
     # Already registered
@@ -489,13 +492,13 @@ def goodNightInformation(userQQ, userGroup, nickname):
                 userQQ, userGroup, GoodMorningModel.NIGHT_MODEL.value
             )
             send += (
-                Utils.extractRandomWords(GoodMorningModel.NIGHT_MODEL.value, nickname)
-                + "\n"
-                + (
-                    Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
-                        "suffix", GoodMorningModel.NIGHT_MODEL.value
-                    )
-                ).replace(r"{number}", str(rank))
+                    Utils.extractRandomWords(GoodMorningModel.NIGHT_MODEL.value, nickname)
+                    + "\n"
+                    + (
+                        Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
+                            "suffix", GoodMorningModel.NIGHT_MODEL.value
+                        )
+                    ).replace(r"{number}", str(rank))
             )
             return send
     if registered["model"] == GoodMorningModel.MORNING_MODEL.value:
@@ -516,10 +519,10 @@ def goodNightInformation(userQQ, userGroup, nickname):
                 userQQ, userGroup, GoodMorningModel.NIGHT_MODEL.value
             )
             send += (
-                Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
-                    "suffix", GoodMorningModel.NIGHT_MODEL.value
-                )
-            ).replace(r"{number}", str(rank)) + "\n"
+                        Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
+                            "suffix", GoodMorningModel.NIGHT_MODEL.value
+                        )
+                    ).replace(r"{number}", str(rank)) + "\n"
             soberAccurateTime = TimeUtils.calculateTheElapsedTimeCombination(
                 registered["accurateTime"]
             )
@@ -544,13 +547,13 @@ def goodNightInformation(userQQ, userGroup, nickname):
                 userQQ, userGroup, GoodMorningModel.NIGHT_MODEL.value
             )
             send += (
-                Utils.extractRandomWords(GoodMorningModel.NIGHT_MODEL.value, nickname)
-                + "\n"
-                + (
-                    Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
-                        "suffix", GoodMorningModel.NIGHT_MODEL.value
-                    )
-                ).replace(r"{number}", str(rank))
+                    Utils.extractRandomWords(GoodMorningModel.NIGHT_MODEL.value, nickname)
+                    + "\n"
+                    + (
+                        Utils.extractConfigurationInformationAccordingToSpecifiedParameters(
+                            "suffix", GoodMorningModel.NIGHT_MODEL.value
+                        )
+                    ).replace(r"{number}", str(rank))
             )
         return send
     return Status.FAILURE

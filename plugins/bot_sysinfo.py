@@ -5,7 +5,9 @@ import time
 import cpuinfo
 import psutil
 from EAbotoy import decorators as deco
+from EAbotoy.model import WeChatMsg
 from EAbotoy.sugar import Text
+from plugins.bot_reply import is_bot_master
 
 
 def get_cpu_info():
@@ -63,9 +65,12 @@ def uptime():
 
 
 def sysinfo():
-    cpu_info = get_cpu_info()
-    mem_info = get_memory_info()
-    up_time = uptime()
+    try:
+        cpu_info = get_cpu_info()
+        mem_info = get_memory_info()
+        up_time = uptime()
+    except AttributeError as _:
+        pass
     msg = (
         "CPU型号:{0}\r\n频率:{1}\r\n架构:{2}\r\n核心数:{3}\r\n线程数:{4}\r\n负载:{5}%\r\n{6}\r\n"
         "总内存:{7}G\r\n已用内存:{8}G\r\n空闲内存:{9}G\r\n内存使用率:{10}%\r\n{6}\r\n"
@@ -97,5 +102,7 @@ def sysinfo():
 
 @deco.ignore_botself
 @deco.equal_content("sysinfo")
-def receive_group_msg(_):
+def receive_wx_msg(ctx: WeChatMsg):
+    if not is_bot_master(ctx.CurrentWxid, ctx.ActionUserName):
+        return
     Text(sysinfo())

@@ -1,9 +1,10 @@
 """吹某个人的牛皮 使用: 艾特一个人并发送文字nb"""
 import random
 
-from EAbotoy import GroupMsg
+from EAbotoy import Action
 from EAbotoy.collection import MsgTypes
 from EAbotoy.decorators import ignore_botself, these_msgtypes
+from EAbotoy.model import WeChatMsg
 from EAbotoy.parser import group as gp
 from EAbotoy.sugar import Text
 
@@ -171,10 +172,16 @@ def get_niubi(name):
     ).format(name=name)
 
 
+action = Action()
+
+
 @ignore_botself
-@these_msgtypes(MsgTypes.AtMsg)
-def receive_group_msg(ctx: GroupMsg):
-    data = gp.at(ctx)
-    if data is not None:
-        if "nb" in data.Content:
-            Text(get_niubi(data.UserExt[0].QQNick))
+@these_msgtypes(MsgTypes.TextMsg)
+def receive_wx_msg(ctx: WeChatMsg):
+    if not ctx.isAtMsg:
+        return
+
+    if "nb" in ctx.Content and ctx.isAtMsg:
+        action.sendWxText(toUserName=ctx.FromUserName,
+                          content=get_niubi(ctx.atUserNames[0]),
+                          atUser=ctx.atUserIds[0])

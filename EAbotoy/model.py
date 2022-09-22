@@ -1,6 +1,6 @@
 # pylint: disable=too-many-instance-attributes
 import warnings
-from re import Match
+from re import Match, findall
 from typing import Optional, List
 from xml.dom.minidom import Element, parseString
 
@@ -39,6 +39,7 @@ class WeChatMsg:
 
     isAtMsg: bool = False
     atUserIds: List[str] = None
+    atUserNames: List[str] = None
 
     message: dict  # raw message
     CurrentWxid: str
@@ -95,6 +96,7 @@ class WeChatMsg:
             self.atUserIds = parseString(self.MsgSource).getElementsByTagName("atuserlist")[0].childNodes[0].data.split(
                 ",")
             self.atUserIds = [user for user in self.atUserIds if user != ""]
+            self.atUserNames = [i + ' ' for i in findall(r"(@.*?)\u2005", self.Content)]
 
         self.MessageSenderId = self.ActionUserName
 

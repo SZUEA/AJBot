@@ -65,7 +65,7 @@ def help(ctx: WeChatMsg):
                        f"{end.join([i[1] for i in plugins])}")
         else:
             for plugin in plugins:
-                if args[1] == plugin[1]:
+                if args[1] == plugin[1] and plugin[2] != '':
                     sugar.Text(f"{plugin[1]}的说明:\n"
                                f"~~~~~~~~~~~~~~\n"
                                f"{plugin[2]}")

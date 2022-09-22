@@ -3,16 +3,17 @@ import base64
 import os
 from enum import Enum
 
-from EAbotoy import Action, GroupMsg
+from EAbotoy import Action
 from EAbotoy.collection import MsgTypes
-from EAbotoy.decorators import ignore_botself, these_msgtypes
+from EAbotoy.decorators import ignore_botself
 from PIL import Image, ImageDraw, ImageFont
+
+from EAbotoy.model import WeChatMsg
 
 try:
     import ujson as json
 except ImportError:
     import json
-
 
 # ==========================================
 
@@ -39,19 +40,17 @@ bot = Action(os.getenv("wxid"))
 
 
 @ignore_botself
-def receive_group_msg(ctx: GroupMsg):
-
-    if Tools.commandMatch(ctx.FromGroupId, blockGroupNumber):
+def receive_wx_msg(ctx: WeChatMsg):
+    if Tools.commandMatch(ctx.FromUserName, blockGroupNumber):
         return
 
     if not Tools.textOnly(ctx.MsgType):
         return
 
-    mainEntrance(ctx.Content, ctx.FromUserId, ctx.FromGroupId, bot)
+    mainEntrance(ctx.Content, ctx.ActionUserName, ctx.FromUserName, bot, ctx)
 
 
 class Model(Enum):
-
     ALL = "_all"
 
     BLURRY = "_blurry"
@@ -62,7 +61,6 @@ class Model(Enum):
 
 
 class Status(Enum):
-
     SUCCESS = "_success"
 
     FAILURE = "_failure"
@@ -119,17 +117,17 @@ class Tools:
 
     @classmethod
     def sendPictures(cls, userGroup, picPath, bot):
-        bot.sendGroupPic(userGroup, picBase64Buf=cls.base64conversion(picPath))
+        bot.sendImg(userGroup, imageBase64=cls.base64conversion(picPath))
 
     @staticmethod
     def sendText(userGroup, msg, bot, model=Model.SEND_DEFAULT, atQQ=""):
         if model == Model.SEND_DEFAULT:
-            bot.sendGroupText(userGroup, content=str(msg))
+            bot.sendWxText(userGroup, content=str(msg))
         if model == Model.SEND_AT:
             if atQQ == "":
                 raise Exception("没有指定 at 的人！")
-            at = f"[ATUSER({atQQ})]\n"
-            bot.sendGroupText(userGroup, content=at + str(msg))
+            at = f"{atQQ}\n"
+            bot.sendWxText(userGroup, content=at + str(msg))
 
     @staticmethod
     def commandMatch(msg, commandList, model=Model.ALL):
@@ -149,7 +147,7 @@ class Tools:
             os.makedirs(dir)
 
 
-def mainEntrance(msg, userQQ, userGroup, bot):
+def mainEntrance(msg, userQQ, userGroup, bot, ctx):
     pictureListCommand = ["img list"]
     primaryMatchingSuffix = [".jpg", ".JPG", '。jpg', '。JPG']
     switchEmojiCommandPrefix = ["img "]
@@ -171,7 +169,7 @@ def mainEntrance(msg, userQQ, userGroup, bot):
             return
     # Change emoji function
     if Tools.commandMatch(msg, switchEmojiCommandPrefix, Model.BLURRY):
-        emoticonAlias = msg[msg.find(" ") + 1 :]
+        emoticonAlias = msg[msg.find(" ") + 1:]
         result = changeEmoji(userQQ, emoticonAlias)
         if result == Status.SUCCESS:
             sendMsg = f"表情已更换为 [{emoticonAlias}] 喵~"
@@ -180,7 +178,7 @@ def mainEntrance(msg, userQQ, userGroup, bot):
                 msg=sendMsg,
                 bot=bot,
                 model=Model.SEND_AT,
-                atQQ=userQQ,
+                atQQ=ctx.atUserNames[0],
             )
             return
 
