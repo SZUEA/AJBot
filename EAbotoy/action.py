@@ -2,6 +2,7 @@
 import functools
 import mimetypes
 import queue
+import random
 import threading
 import time
 import traceback
@@ -47,7 +48,7 @@ class _SendThread(threading.Thread):
                 self.running = False
                 break
             else:
-                should_wait = self.delay - (time.time() - self.last_send_time)
+                should_wait = (self.delay + self.delay * random.random() * 0.2) - (time.time() - self.last_send_time)
                 if should_wait > 0:
                     time.sleep(should_wait)
                 try:
@@ -72,6 +73,11 @@ class _SendThread(threading.Thread):
         self.tasks.put(task)
         if not self.running:
             self.start()
+
+
+queue_delay = 1.1
+_send_thread = _SendThread(queue_delay)
+_send_thread.setDaemon(True)
 
 
 class Action:
@@ -100,8 +106,8 @@ class Action:
         self.lock = threading.Lock()
 
         self._use_queue = is_use_queue
-        self._send_thread = _SendThread(queue_delay)
-        self._send_thread.setDaemon(True)
+        # self._send_thread = _SendThread(queue_delay)
+        # self._send_thread.setDaemon(True)
 
     @property
     def wxid(self) -> int:
@@ -287,7 +293,7 @@ class Action:
         )
         functools.update_wrapper(job, self._baseRequest)
         if self._use_queue:
-            self._send_thread.put_task(
+            _send_thread.put_task(
                 _Task(target=job))
             return None
         return job()
@@ -306,7 +312,7 @@ class Action:
         )
         functools.update_wrapper(job, self._baseRequest)
         if self._use_queue:
-            self._send_thread.put_task(
+            _send_thread.put_task(
                 _Task(target=job))
             return None
         return job()

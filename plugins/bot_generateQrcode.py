@@ -22,4 +22,6 @@ def gen_qrcode(text: str) -> str:
 @ignore_botself
 @startswith("测码")
 def receive_wx_msg(ctx: WeChatMsg):
-    Picture(pic_base64=gen_qrcode(ctx.Content[2:]))
+    content = ctx.Content[2:]
+    if content != '':
+        Picture(pic_base64=gen_qrcode(content))
