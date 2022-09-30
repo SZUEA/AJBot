@@ -212,6 +212,28 @@ class Action:
         )
 
     ############################################################################
+    def revokeMsg(
+            self,
+            ctx: WeChatMsg
+    ):
+        """撤回"""
+
+        arg = {
+            "CgiCmd": 594,
+            "CgiRequest": {
+                "OpCode": 0,
+                "MsgId": ctx.MsgId,
+                "NewMsgId": ctx.NewMsgId,
+                "ToUserName": ctx.FromUserName
+            }
+        }
+
+        return self._post(
+            "MagicCgi",
+            arg,
+        )
+
+    ############################################################################
     def _baseRequest(
             self,
             method: str,
