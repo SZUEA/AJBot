@@ -12,7 +12,8 @@
 """
 import re
 import time
-from random import randrange
+from random import randrange, choice
+from typing import Union, List
 from xml.dom.minidom import parseString
 
 from EAbotoy import Action, sugar
@@ -52,7 +53,7 @@ class Reply(object):
     def reply(self, ctx: WeChatMsg):
         if self.response_type == 'text':
             Action(ctx.CurrentWxid).sendWxText(ctx.FromUserName,
-                                               content=self.reply_list[randrange(0, len(self.reply_list))])
+                                               content=self.reply_list[choice(self.reply_list)])
         elif self.response_type == 'pic':
             Action(ctx.CurrentWxid).sendCdnImg(ctx.FromUserName, xml=self.pic_url)
         else:
@@ -129,10 +130,10 @@ def init_response():
                      reply['response_type'], reply['pic_url'])
     end_time = time.perf_counter()
 
-    def k(obj: Reply):
-        return type_map[obj.__class__.__name__]
-
-    response_list.sort(key=k)
+    # def k(obj: Reply):
+    #     return type_map[obj.__class__.__name__]
+    #
+    # response_list.sort(key=k)
     return end_time - start_time
 
 
@@ -231,10 +232,15 @@ def go_reply(ctx: WeChatMsg):
     if ctx.Content.startswith(".dele"):
         return
 
+    res_list: List[Reply] = []
     for reply in response_list:
         if reply.match(ctx.Content, ctx.FromUserName):
-            reply.reply(ctx)
-            return
+            res_list.append(reply)
+
+    if len(res_list) == 0:
+        return
+    choice(res_list).reply(ctx)
+    return
 
 
 @plugin_receiver.wx
