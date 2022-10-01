@@ -3,8 +3,7 @@ import random
 import re
 import time
 
-from EAbotoy import Action, jconfig
-from EAbotoy.decorators import from_botself, in_content
+from EAbotoy import Action, MsgTypes
 from EAbotoy.model import WeChatMsg
 
 
@@ -13,11 +12,12 @@ from EAbotoy.model import WeChatMsg
 # revoke[10] 10s后撤回
 
 
-def receive_group_msg(ctx: WeChatMsg):
-    if 'revoke' not in ctx.Content:
+def receive_wx_msg(ctx: WeChatMsg):
+    if ctx.MsgType != MsgTypes.TextMsg:
         return
-    delay = re.findall(r"^![\[【（({]?(\d+)[]】）)}]?", ctx.Content)
-
+    if not ctx.Content.startswith('!') and not ctx.Content.startswith("！"):
+        return
+    delay = re.findall(r"^[!！][\[【（({]?(\d+)[]】）)}]?", ctx.Content)
 
     if delay:
         delay = min(int(delay[0]), 60)
