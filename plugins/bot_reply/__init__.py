@@ -53,7 +53,7 @@ class Reply(object):
     def reply(self, ctx: WeChatMsg):
         if self.response_type == 'text':
             Action(ctx.CurrentWxid).sendWxText(ctx.FromUserName,
-                                               content=self.reply_list[choice(self.reply_list)])
+                                               content=choice(self.reply_list))
         elif self.response_type == 'pic':
             Action(ctx.CurrentWxid).sendCdnImg(ctx.FromUserName, xml=self.pic_url)
         else:
