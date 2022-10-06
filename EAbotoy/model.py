@@ -84,6 +84,8 @@ class WeChatMsg:
         if "@chatroom" in self.FromUserName:
             self.IsGroup = True
             self.GroupId = self.FromUserName
+        else:
+            self.__dict__['ActionUserName'] = self.FromUserName
 
         if self.MsgType == MsgTypes.ImgMsg:
             self.imgCDNContent = self.Content

@@ -16,7 +16,7 @@ from random import randrange, choice
 from typing import Union, List
 from xml.dom.minidom import parseString
 
-from EAbotoy import Action, sugar
+from EAbotoy import Action, sugar, jconfig
 from EAbotoy.contrib import plugin_receiver
 from EAbotoy.model import WeChatMsg
 from EAbotoy.collection import MsgTypes
@@ -53,7 +53,7 @@ class Reply(object):
     def reply(self, ctx: WeChatMsg):
         if self.response_type == 'text':
             Action(ctx.CurrentWxid).sendWxText(ctx.FromUserName,
-                                               content=choice(self.reply_list))
+                                               content=choice(self.reply_list).replace("\\n", "\n"))
         elif self.response_type == 'pic':
             Action(ctx.CurrentWxid).sendCdnImg(ctx.FromUserName, xml=self.pic_url)
         else:
@@ -159,10 +159,10 @@ def add_reply():
     if content == "" or content is None:
         honey.finish()
 
-    if not (content.startswith('.') or content.startswith('。') or content.startswith('?')):
+    if content[0] not in ".。?？":
         honey.finish()
 
-    isAdmin = is_bot_master(ctx.CurrentWxid, ctx.ActionUserName)
+    isAdmin = is_bot_master(ctx.CurrentWxid, ctx.ActionUserName) or ctx.ActionUserName == ctx.master
 
     content = content[1:]
     if content == 'reload' and isAdmin:
@@ -189,8 +189,7 @@ def add_reply():
 
     args = content.split(' ')
     if len(args) < 2:
-        sugar.Text("参数不足")
-        honey.finish()
+        honey.finish("参数不足")
     op = DB()
     # if pic_ctx is None:
 
@@ -229,7 +228,8 @@ def add_reply():
 def go_reply(ctx: WeChatMsg):
     if ctx.MsgType != MsgTypes.TextMsg:
         return
-    if ctx.Content.startswith(".dele"):
+
+    if ctx.Content[0] in ".。?？":
         return
 
     res_list: List[Reply] = []
@@ -249,8 +249,11 @@ def delete_reply(ctx: WeChatMsg):
     if ctx.MsgType != MsgTypes.TextMsg:
         return
 
+    if ctx.Content[0] not in ".。?？":
+        return
+
     content = ctx.Content[1:]
-    if content.startswith('dele') or content.startswith('删除') or content.startswith("dell"):
+    if content.startswith("del") or content.startswith('删除'):
         args = content.split(' ')
         if len(args) < 2:
             sugar.Text(f"参数不足")
