@@ -203,10 +203,13 @@ def add_reply():
             response = parseString(response).getElementsByTagName('emoji')[0].getAttribute("md5")
         elif '<?xml version="1.0"?>' in response:
             isImg = 'pic'
-        elif '<' in response:
+        # elif '<' in response:
             honey.finish("不支持的类型")
     else:
         response = ' '.join(args[2:])
+
+    if response == '' or '<' in response:
+        honey.finish("捣乱是吧，抓出去砍了")
 
     if isImg == 'text':
         _id = op.insert_reply_message(args[1], response, message_type,
