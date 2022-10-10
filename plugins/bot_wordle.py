@@ -89,7 +89,7 @@ def prompt_guess_history(session):
     for word in guesses:
         result = wordlecore_match(correct_word, word)
         res.append("   ".join(list(word.upper())) + "\n" +
-                   '   '.join(list(result.replace('_', '⬜').replace('O', '🟩').replace('?', '🟨'))))
+                   ' '.join(list(result.replace('_', '⬜').replace('O', '🟩').replace('?', '🟨'))))
 
     return '\n'.join(res)
 
