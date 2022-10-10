@@ -222,8 +222,6 @@ class Botoy:
         ctx = parameters[0]
         annotation = ctx.annotation
 
-        is_friend = False
-        is_group = False
         is_event = False
         is_wx = False
         # 1. 未指定类型，全部接收

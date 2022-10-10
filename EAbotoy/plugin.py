@@ -36,10 +36,11 @@ class Plugin:
         self.module: Optional[ModuleType] = None
         self._enabled = True
         self._name = None
+        self.env = os.environ["env"]
 
     @property
     def enabled(self) -> bool:
-        return self._enabled
+        return self._enabled and not ((self.env == 'dev') ^ (self.dev is not None))
 
     def enable(self):
         self._enabled = True
@@ -77,6 +78,10 @@ class Plugin:
         if self.module is not None:
             return self.module.__doc__ or ""
         return ""
+
+    @property
+    def dev(self):
+        return True if 'dev' in self.import_path else None
 
     @property
     def name(self) -> str:

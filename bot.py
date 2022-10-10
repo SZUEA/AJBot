@@ -9,6 +9,7 @@ from plugins.bot_reply import is_bot_master
 
 wxid = jconfig.wxid
 os.environ["wxid"] = str(wxid)
+os.environ["env"] = str(jconfig.env)
 bot = Botoy(wxid=wxid, use_plugins=True)
 
 action = Action(wxid, host=jconfig.host, port=jconfig.port, is_use_queue=True)
