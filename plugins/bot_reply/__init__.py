@@ -170,14 +170,14 @@ def add_reply():
         honey.finish(f"关键词回复重载完毕，用时{str(cost)[:5]} s")
 
     message_type = ''
-    if content.startswith('pre') or content.startswith('前缀'):
+    arg = content.split(' ')[0]
+    if arg in ['pre', '前缀']:
         message_type = 'PreReply'
-    elif content.startswith('eq') or content.startswith('全等') or content.startswith('等于') \
-            or content.startswith('reply') or content.startswith('set'):
+    elif arg in ['eq', '全等', '等于', 'set', 'reply']:
         message_type = 'EqualReply'
-    elif content.startswith('re') or content.startswith('正则'):
+    elif arg in ['re', '正则']:
         message_type = 'RegReply'
-    elif content.startswith('con') or content.startswith('包含'):
+    elif arg in ['con', '包含', 'contain', 'cont']:
         message_type = 'ContainReply'
     else:
         honey.finish()
