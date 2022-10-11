@@ -208,7 +208,7 @@ def add_reply():
     else:
         response = ' '.join(args[2:])
 
-    if response == '' or '<' in response:
+    if args[1] == '' or response == '' or '<' in response:
         honey.finish("捣乱是吧，抓出去砍了")
 
     if isImg == 'text':
