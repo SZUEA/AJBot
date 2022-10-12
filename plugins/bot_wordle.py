@@ -113,7 +113,7 @@ def wd_check_game_win(session):
 @these_msgtypes(MsgTypes.TextMsg)
 @startswith(".wd")
 def receive_wx_msg(ctx: WeChatMsg):
-    wxid = ctx.CurrentWxid
+    wxid = ctx.FromUserName
 
     if ctx.Content == ".wdstart":
         session = wd_start_personal(wxid)

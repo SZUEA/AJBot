@@ -155,7 +155,20 @@ class _S:
 
         if isinstance(ctx, WeChatMsg):
             return action.sendCdnImg(
-                ctx.FromGroupId, xml
+                ctx.FromUserName, xml
+            )
+        return None
+
+    def emoji(self, md5: str):
+        """表情包
+        :param md5: md5
+        """
+        ctx = self.ctx
+        action = Action.from_ctx(ctx)
+
+        if isinstance(ctx, WeChatMsg):
+            return action.sendEmoji(
+                ctx.FromUserName, EmojiMd5=md5
             )
         return None
 
@@ -405,6 +418,13 @@ def CDNPic(xml: str):
     :param xml: xml
     """
     return S.bind(find_ctx()).cdn_pic(xml)
+
+
+def Emoji(md5: str):
+    """发送文字
+    :param xml: xml
+    """
+    return S.bind(find_ctx()).emoji(md5)
 
 
 def Picture(pic_url="", pic_base64="", pic_path="", pic_md5="", text=""):
