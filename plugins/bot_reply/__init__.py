@@ -189,9 +189,21 @@ def add_reply():
 
     args = content.split(' ')
     if len(args) < 2:
-        honey.finish("参数不足")
-    op = DB()
-    # if pic_ctx is None:
+        if message_type != 'EqualReply':
+            honey.finish("参数不足")
+
+        arg = session.want("arg", "请发送匹配词", timeout=30)
+        if arg is None:
+            honey.finish("已超时，请从头开始")
+        elif arg.startswith("<msg><emoji fromusername"):
+            arg = parseString(arg).getElementsByTagName('emoji')[0].getAttribute("md5")
+        elif '<?xml version="1.0"?>' in arg:
+            arg = parseString(arg).getElementsByTagName('img')[0].getAttribute("md5")
+        elif '<' in arg:
+            honey.finish("捣乱是吧，抓出去砍了")
+        rule = arg
+    else:
+        rule = args[1]
 
     isImg = 'text'
     if len(args) < 3:
@@ -210,36 +222,43 @@ def add_reply():
         if '<' in response:
             honey.finish("捣乱是吧，抓出去砍了")
 
-    if args[1] == '' or response == '':
+    if rule == '' or response == '':
         honey.finish("捣乱是吧，抓出去砍了")
 
+    op = DB()
     if isImg == 'text':
-        _id = op.insert_reply_message(args[1], response, message_type,
+        _id = op.insert_reply_message(rule, response, message_type,
                                       'text', ctx.FromUserName, ctx.ActionUserName)
-        add_response(_id, args[1], response, message_type, ctx.FromUserName, 'text')
+        add_response(_id, rule, response, message_type, ctx.FromUserName, 'text')
     elif isImg == 'pic':
-        _id = op.insert_reply_message(args[1], "", message_type,
+        _id = op.insert_reply_message(rule, "", message_type,
                                       'pic', ctx.FromUserName, ctx.ActionUserName, response)
-        add_response(_id, args[1], "", message_type, ctx.FromUserName, 'pic', response)
+        add_response(_id, rule, "", message_type, ctx.FromUserName, 'pic', response)
     elif isImg == 'emoji':
-        _id = op.insert_reply_message(args[1], "", message_type,
+        _id = op.insert_reply_message(rule, "", message_type,
                                       'emoji', ctx.FromUserName, ctx.ActionUserName, response)
-        add_response(_id, args[1], "", message_type, ctx.FromUserName, 'emoji', response)
-    honey.finish(f"""对关键词"{args[1]}"的回复添加成功""")
+        add_response(_id, rule, "", message_type, ctx.FromUserName, 'emoji', response)
+    honey.finish(f"""回复添加成功~""")
 
 
 @plugin_receiver.wx
 @ignore_botself
 def go_reply(ctx: WeChatMsg):
-    if ctx.MsgType != MsgTypes.TextMsg:
+    if ctx.Content[0] in ".。?？":
         return
 
-    if ctx.Content[0] in ".。?？":
+    if ctx.MsgType == MsgTypes.TextMsg:
+        content = ctx.Content
+    elif ctx.MsgType == MsgTypes.EmojiMsg:
+        content = ctx.emojiMd5
+    elif ctx.MsgType == MsgTypes.ImgMsg:
+        content = ctx.imgMd5
+    else:
         return
 
     res_list: List[Reply] = []
     for reply in response_list:
-        if reply.match(ctx.Content, ctx.FromUserName):
+        if reply.match(content, ctx.FromUserName):
             res_list.append(reply)
 
     if len(res_list) == 0:

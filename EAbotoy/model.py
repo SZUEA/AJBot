@@ -21,6 +21,8 @@ class WeChatMsg:
     ImgStatus: int
     ImgBuf: str  # 图片小图 模糊图片 base64
     imgCDNContent: str
+    imgMd5: str
+
 
     emojiMd5: str
 
@@ -89,6 +91,7 @@ class WeChatMsg:
 
         if self.MsgType == MsgTypes.ImgMsg:
             self.imgCDNContent = self.Content
+            self.imgMd5 = parseString(self.Content).getElementsByTagName('img')[0].getAttribute('md5')
 
         if self.MsgType == MsgTypes.EmojiMsg:
             self.emojiMd5 = parseString(self.Content).getElementsByTagName('emoji')[0].getAttribute("md5")
