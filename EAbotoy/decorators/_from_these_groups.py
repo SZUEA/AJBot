@@ -8,7 +8,7 @@ def from_these_groups(*groups):
         def inner(ctx: WeChatMsg):
             nonlocal groups
             if not ctx.IsGroup:
-                return
+                return None
             from_group = ctx.FromUserName
             if from_group in groups:
                 return func(ctx)

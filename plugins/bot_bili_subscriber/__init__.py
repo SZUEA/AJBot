@@ -25,7 +25,7 @@ from .utils import clean_html
 # 订阅逻辑
 bilibili_handler = SessionHandler()
 
-white_groups = ['18728854191@chatroom']
+white_groups = ['18728854191@chatroom', '18803656716@chatroom']
 
 
 @bilibili_handler.handle
@@ -46,7 +46,7 @@ def _():
 
         # 格式1不行，通过格式2，关键词搜索
         if mid is None:
-            keyword = ctx.Content[6:]
+            keyword = ctx.Content[4:]
             ups = API.search_up_by_keyword(keyword)
             if not ups:
                 bilibili_handler.finish("未找到相关UP，请重试或修改指令内容")
@@ -84,7 +84,7 @@ def _():
             bilibili_handler.finish("本群已订阅该UP主")
 
     elif ctx.Content.startswith("番剧订阅"):
-        keyword = ctx.Content[6:]
+        keyword = ctx.Content[4:]
         bangumis = API.search_bangumi_by_keyword(keyword)
         if not bangumis:
             bilibili_handler.finish("未找到相关番剧，请重试或修改指令内容")
@@ -131,7 +131,7 @@ action: Action = None
 # ==============
 
 # 订阅使用session， 其他操作使用普通指令
-@from_these_groups(white_groups)
+@from_these_groups(*white_groups)
 def receive_wx_msg(ctx: WeChatMsg):
     global action  # pylint: disable=W0603
     if action is None:
