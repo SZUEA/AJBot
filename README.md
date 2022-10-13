@@ -10,12 +10,10 @@
   "port": 8888,
   "wxid": "机器人wxid号",
   "master": "你的wxid号",
+  "env": "dev",
   "group_blacklist": [],
   "friend_blacklist": [],
   "blocked_users": [],
-  "webhook": false,
-  "webhook_post_url": "http://127.0.0.1:5000",
-  "webhook_timeout": 20
 }
 
 ```
@@ -26,7 +24,7 @@
 
 ```shell
 pip install -r requirements.txt
-EAbotoy run
+python boy.py
 ```
 
 # LICENSE
