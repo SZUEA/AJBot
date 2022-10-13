@@ -16,6 +16,7 @@ from EAbotoy import Action, jconfig
 from EAbotoy.model import WeChatMsg
 from EAbotoy.schedule import scheduler
 from EAbotoy.session import Prompt, SessionHandler, ctx, session
+from EAbotoy.decorators import from_these_groups
 
 from .api import API
 from .db import DB
@@ -24,9 +25,17 @@ from .utils import clean_html
 # 订阅逻辑
 bilibili_handler = SessionHandler()
 
+white_groups = ['18728854191@chatroom']
+
 
 @bilibili_handler.handle
 def _():
+    if not ctx.IsGroup:
+        bilibili_handler.finish()
+    from_group = ctx.FromUserName
+    if from_group not in white_groups:
+        bilibili_handler.finish()
+
     if ctx.Content.startswith("视频订阅"):
         # 确定订阅UP的mid, 如果无法确定则随时退出
         # 通过格式1 -> UID:数字
@@ -122,6 +131,7 @@ action: Action = None
 # ==============
 
 # 订阅使用session， 其他操作使用普通指令
+@from_these_groups(white_groups)
 def receive_wx_msg(ctx: WeChatMsg):
     global action  # pylint: disable=W0603
     if action is None:
