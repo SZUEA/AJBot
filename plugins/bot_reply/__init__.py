@@ -151,6 +151,12 @@ honey = SessionHandler(
 ).receive_wx_msg()
 
 
+def wait_get(name, st):
+    arg = session.want(name, timeout=3)
+    if arg is None:
+        arg = session.want(name, st, timeout=30)
+    return arg
+
 @honey.handle
 def add_reply():
     if ctx.MsgType != MsgTypes.TextMsg and "@chatroom" not in ctx.FromUserName:
@@ -192,7 +198,7 @@ def add_reply():
         if message_type != 'EqualReply':
             honey.finish("参数不足")
 
-        arg = session.want("arg", "请发送匹配词", timeout=30)
+        arg = wait_get("arg", "请发送匹配词")
         if arg is None:
             honey.finish("已超时，请从头开始")
         elif arg.startswith("<msg><emoji fromusername"):
@@ -207,7 +213,7 @@ def add_reply():
 
     isImg = 'text'
     if len(args) < 3:
-        response = session.want("response", "请发送你想要的回复词，可以是图片", timeout=30)
+        response = wait_get("response", "请发送你想要的回复词，可以是图片")
         if response is None:
             honey.finish("已超时，请从头开始")
         elif response.startswith("<msg><emoji fromusername"):

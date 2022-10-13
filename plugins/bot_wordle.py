@@ -7,13 +7,13 @@
 from EAbotoy.collection import MsgTypes
 from EAbotoy.decorators import ignore_botself, startswith, these_msgtypes
 from EAbotoy.model import WeChatMsg
-from EAbotoy import sugar
+from EAbotoy import sugar, Text
 import random
 import re
 
 
 def load_wordlist(filename):
-    wordlist_file = open(filename)
+    wordlist_file = open(filename, encoding='utf-8')
     wordlist_lines = wordlist_file.readlines()
     wordlist_file.close()
     lst = list(map(lambda l: l.split(" ", 1), filter(lambda l: len(l) >= 1 and l[0][0] != "#",
@@ -98,9 +98,9 @@ def prompt_guess_history(session):
     correct_word = session["correct_word"]
     for word in guesses:
         result = wordlecore_match(correct_word, word)
-        res.append("   ".join(list(word.upper())) + "\n" + result.replace('_', '⬜').replace('O', '🟩').replace('?',
-                                                                                                              '🟨') + prompt_word_trans(
-            "  {}", word))
+        res.append("   ".join(list(word.upper())) + "\n" +
+                   ' '.join(list(result.replace('_', '⬜').replace('O', '🟩').replace('?', '🟨')))
+                   + prompt_word_trans("  {}", word))
 
     return '\n'.join(res)
 
@@ -131,7 +131,7 @@ def receive_wx_msg(ctx: WeChatMsg):
 
     if ctx.Content == ".wdstart":
         session = wd_start_personal(wxid)
-        print(
+        Text(
             prompt_new_game(session) + "，使用 .wd [单词] 开始猜词",
             True, ctx
         )
@@ -139,7 +139,7 @@ def receive_wx_msg(ctx: WeChatMsg):
 
     guess_word = ctx.Content.split(' ')[-1].lower()
     if re.match('^[a-z]+$', guess_word) is None:
-        print("无效单词，必须为纯字母", True, ctx)
+        Text("无效单词，必须为纯字母", True, ctx)
         return
 
     is_new_game = False
@@ -150,20 +150,22 @@ def receive_wx_msg(ctx: WeChatMsg):
 
     correct_length = len(session["correct_word"])
     if len(guess_word) != correct_length:
-        print("长度错误！请输入 {} 字母长的单词".format(correct_length), True, ctx)
+        Text("长度错误！请输入 {} 字母长的单词".format(correct_length), True, ctx)
         return
 
-    if wordlist.get(guess_word) is None:
-        print("无效单词，'{}' 不在单词表中".format(guess_word), True, ctx)
+    try:
+        wordlist.index(guess_word)
+    except ValueError:
+        Text("无效单词，'{}' 不在单词表中".format(guess_word), True, ctx)
         return
 
     wd_make_guess(session, guess_word)
 
     if is_new_game:
-        print(prompt_new_game(session) + "，你的第一个猜测结果：\n" + prompt_guess_history(
+        Text(prompt_new_game(session) + "，你的第一个猜测结果：\n" + prompt_guess_history(
             session) + "\n" + wd_check_game_win(session), True, ctx)
     else:
-        print("\n" + prompt_guess_history(session) + "\n" + wd_check_game_win(session), True, ctx)
+        Text("\n" + prompt_guess_history(session) + "\n" + wd_check_game_win(session), True, ctx)
 
     if wd_gameover(session):
         wd_stopsession(wxid)
