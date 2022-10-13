@@ -191,16 +191,14 @@ class _S:
                 TYPE_PATH,
         ):
             type, data = _resolve_data_type(data)
-        if isinstance(ctx, WeChatMsg):
-            if type == TYPE_URL:
-                return action.sendImg(ctx.FromUserName, imageUrl=data)  # type: ignore
-            elif type == TYPE_BASE64:
-                return action.sendImg(ctx.FromUserName, imageBase64=data)  # type: ignore
-            elif type == TYPE_PATH:
-                return action.sendImg(
-                    ctx.FromGroupId, imagePath=file_to_base64(data)
-                )
-
+        if type == TYPE_URL:
+            return action.sendImg(ctx.FromUserName, imageUrl=data)  # type: ignore
+        elif type == TYPE_BASE64:
+            return action.sendImg(ctx.FromUserName, imageBase64=data)  # type: ignore
+        elif type == TYPE_PATH:
+            return action.sendImg(
+                ctx.FromGroupId, imagePath=file_to_base64(data)
+            )
         return None
 
     # def voice(self, data: _T_Data, type: int = 0):
@@ -427,8 +425,9 @@ def Emoji(md5: str):
     return S.bind(find_ctx()).emoji(md5)
 
 
-def Picture(pic_url="", pic_base64="", pic_path="", pic_md5="", text=""):
+def Picture(pic_url="", pic_base64="", pic_path="", pic_md5="", text="", ctx=None):
     """发送图片 经支持群消息和好友消息接收函数内调用
+    :param ctx:
     :param pic_url: 图片链接
     :param pic_base64: 图片base64编码
     :param pic_path: 图片文件路径
@@ -439,7 +438,10 @@ def Picture(pic_url="", pic_base64="", pic_path="", pic_md5="", text=""):
     """
     assert any([pic_url, pic_base64, pic_path, pic_md5]), "必须给定一项"
 
-    image = S.bind(find_ctx()).image
+    if ctx is None:
+        ctx = find_ctx()
+
+    image = S.bind(ctx).image
     if pic_url:
         return image(pic_url, type=S.TYPE_URL)
     elif pic_base64:

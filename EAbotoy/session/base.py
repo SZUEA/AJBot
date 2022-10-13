@@ -165,12 +165,8 @@ class Session(SessionBase):
         :param args: 该方法可设置的位置参数
         :param kwargs: 该方法可设置的命名参数
         """
-        if isinstance(self.ctx, WeChatMsg):
-            user = self.ctx.FromUin
-            group = self.ctx.FromUserName or 0
-        else:
-            user = self.ctx.FromUserId
-            group = self.ctx.FromGroupId
+        user = self.ctx.ActionUserName
+        group = self.ctx.GroupId
         for k, v in kwargs.copy().items():
             if v == "[user]":
                 kwargs[k] = user

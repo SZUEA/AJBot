@@ -12,7 +12,7 @@
 # pylint: disable=R0915
 import re
 
-from EAbotoy import Action, jconfig
+from EAbotoy import Action, jconfig, Text, Picture
 from EAbotoy.model import WeChatMsg
 from EAbotoy.schedule import scheduler
 from EAbotoy.session import Prompt, SessionHandler, ctx, session
@@ -74,12 +74,8 @@ def _():
             if upinfo is None:
                 bilibili_handler.finish(f"成功订阅UP主：{mid}")
             else:
-                bilibili_handler.finish(
-                    Prompt.group_picture(
-                        url=upinfo.face,
-                        text=f"成功订阅UP主：{upinfo.name}",
-                    )
-                )
+                Picture(pic_url=upinfo.face, ctx=ctx)
+                bilibili_handler.finish(f"成功订阅UP主：{upinfo.name}")
         else:
             bilibili_handler.finish("本群已订阅该UP主")
 
@@ -110,12 +106,8 @@ def _():
         db = DB()
 
         if db.subscribe_bangumi(ctx.GroupId, choose_bangumi.media_id):
-            bilibili_handler.finish(
-                Prompt.group_picture(
-                    url=choose_bangumi.cover,
-                    text=f"成功订阅番剧: {clean_html(choose_bangumi.title)}",
-                )
-            )
+            Picture(pic_url=choose_bangumi.cover, ctx=ctx)
+            bilibili_handler.finish(f"成功订阅番剧: {clean_html(choose_bangumi.title)}")
         else:
             bilibili_handler.finish("本群已订阅过该番剧")
 
