@@ -41,7 +41,6 @@ def get_answer(input):
 
 @these_msgtypes(MsgTypes.TextMsg)  # 指定消息类型
 def receive_wx_msg(ctx: WeChatMsg):  # 函数名字只能是这个才能触发
-    return
     if not ctx.Content.startswith(".c") and not ctx.Content.startswith("。c"):
         return
     text = ctx.Content.split(' ')[-1].lower()
