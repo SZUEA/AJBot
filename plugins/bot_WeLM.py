@@ -28,16 +28,14 @@ def get_answer(input):
         'top_k': 50,
         'n': 1,
         'echo': False,
-        'stop': '。'
+        'stop': '。.'
     }
 
     response = requests.post('https://welm.weixin.qq.com/v1/completions', headers=headers, json=json_data)
     text = json.loads(response.content)["choices"][0]['text']
     answer = 'EAbot遗憾地告诉你：生成错误！！以下为可能的错误原因：\n1、输入的文字过长\n2、输入或者输出违反相关法律法规不予显示\n3、奇奇怪怪的bug'
     if text:
-        answer = text.replace('\n', '').replace('@', '').replace('\r', '').replace('>', '').replace('匿名用户',
-                                                                                                    '').replace(
-            '[图片]', '')
+        answer = text.replace('\n', '').replace('@', '').replace('\r', '').replace('>', '').replace('匿名用户', '').replace('[图片]', '')
     return answer
 
 
