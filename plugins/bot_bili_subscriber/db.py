@@ -17,7 +17,8 @@ class DB:
         )
         # up_subscribed: id, gid, mid
         self.cur.execute(
-            "CREATE TABLE IF NOT EXISTS up_subscribed(id integer primary key autoincrement, gid integer, mid interger);"
+            "CREATE TABLE IF NOT EXISTS up_subscribed(id integer primary key autoincrement, "
+            "gid varchar(40), mid interger);"
         )
         # bangumi
         # bangumi_data: mid, ep_id
@@ -26,36 +27,37 @@ class DB:
         )
         # bangumi_subscribed: id, gid, mid
         self.cur.execute(
-            "CREATE TABLE IF NOT EXISTS bangumi_subscribed(id integer primary key autoincrement, gid integer, mid interger);"
+            "CREATE TABLE IF NOT EXISTS bangumi_subscribed(id integer primary key autoincrement, "
+            "gid varchar(40), mid interger);"
         )
         self.con.commit()
 
     # up video
-    def get_ups_by_gid(self, gid: int) -> List[int]:
+    def get_ups_by_gid(self, gid: str) -> List[int]:
         """list of up's mid"""
-        self.cur.execute(f"SELECT * FROM up_subscribed WHERE gid={gid}")
+        self.cur.execute(f"SELECT * FROM up_subscribed WHERE gid='{gid}'")
         return [ret[2] for ret in self.cur.fetchall()]
 
-    def get_gids_by_up_mid(self, mid: int) -> List[int]:
+    def get_gids_by_up_mid(self, mid: int) -> List[str]:
         """list of subscribed gid"""
         self.cur.execute(f"SELECT * FROM up_subscribed WHERE mid={mid}")
         return [ret[1] for ret in self.cur.fetchall()]
 
-    def subscribe_up(self, gid: int, mid: int) -> bool:
+    def subscribe_up(self, gid: str, mid: int) -> bool:
         """返回False表示已经订阅过了"""
-        self.cur.execute(f"SELECT * FROM up_subscribed WHERE gid={gid} AND mid={mid}")
+        self.cur.execute(f"SELECT * FROM up_subscribed WHERE gid='{gid}' AND mid={mid}")
         if self.cur.fetchall():
             return False
-        self.cur.execute(f"INSERT INTO up_subscribed (gid, mid) VALUES ({gid}, {mid})")
+        self.cur.execute(f"INSERT INTO up_subscribed (gid, mid) VALUES ('{gid}', {mid})")
         self.con.commit()
         return True
 
-    def unsubscribe_up(self, gid: int, mid: int) -> bool:
+    def unsubscribe_up(self, gid: str, mid: int) -> bool:
         """返回False表示未订阅"""
-        self.cur.execute(f"SELECT * FROM up_subscribed WHERE gid={gid} AND mid={mid}")
+        self.cur.execute(f"SELECT * FROM up_subscribed WHERE gid='{gid}' AND mid={mid}")
         if not self.cur.fetchall():
             return False
-        self.cur.execute(f"DELETE FROM up_subscribed WHERE gid={gid} AND mid={mid}")
+        self.cur.execute(f"DELETE FROM up_subscribed WHERE gid='{gid}' AND mid={mid}")
         self.con.commit()
         return True
 
@@ -85,38 +87,38 @@ class DB:
         return False
 
     # bangumi
-    def get_bangumi_by_gid(self, gid: int) -> List[int]:
+    def get_bangumi_by_gid(self, gid: str) -> List[int]:
         """list of bangumi's mid"""
-        self.cur.execute(f"SELECT * FROM bangumi_subscribed WHERE gid={gid}")
+        self.cur.execute(f"SELECT * FROM bangumi_subscribed WHERE gid='{gid}'")
         return [ret[2] for ret in self.cur.fetchall()]
 
-    def get_gids_by_bangumi_mid(self, mid: int) -> List[int]:
+    def get_gids_by_bangumi_mid(self, mid: int) -> List[str]:
         """list of gid that has subscribed"""
         self.cur.execute(f"SELECT * FROM bangumi_subscribed WHERE mid={mid}")
         return [ret[1] for ret in self.cur.fetchall()]
 
-    def subscribe_bangumi(self, gid: int, mid: int) -> bool:
+    def subscribe_bangumi(self, gid: str, mid: int) -> bool:
         """返回False表示已经订阅过了"""
         self.cur.execute(
-            f"SELECT * FROM bangumi_subscribed WHERE gid={gid} AND mid={mid}"
+            f"SELECT * FROM bangumi_subscribed WHERE gid='{gid}' AND mid={mid}"
         )
         if self.cur.fetchall():
             return False
         self.cur.execute(
-            f"INSERT INTO bangumi_subscribed (gid, mid) VALUES ({gid}, {mid})"
+            f"INSERT INTO bangumi_subscribed (gid, mid) VALUES ('{gid}', {mid})"
         )
         self.con.commit()
         return True
 
-    def unsubscribe_bangumi(self, gid: int, mid: int) -> bool:
+    def unsubscribe_bangumi(self, gid: str, mid: int) -> bool:
         """返回False表示未订阅"""
         self.cur.execute(
-            f"SELECT * FROM bangumi_subscribed WHERE gid={gid} AND mid={mid}"
+            f"SELECT * FROM bangumi_subscribed WHERE gid='{gid}' AND mid={mid}"
         )
         if not self.cur.fetchall():
             return False
         self.cur.execute(
-            f"DELETE FROM bangumi_subscribed WHERE gid={gid} AND mid={mid}"
+            f"DELETE FROM bangumi_subscribed WHERE gid='{gid}' AND mid={mid}"
         )
         self.con.commit()
         return True

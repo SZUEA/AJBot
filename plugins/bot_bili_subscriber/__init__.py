@@ -1,18 +1,19 @@
 """ B站视频或番剧订阅
 
-哔哩视频订阅+{UID:123}
-哔哩视频订阅+{UP名字}
-哔哩视频退订+{UID}
-哔哩视频列表
+视频订阅+{UID:123}
+视频订阅+{UP名字}
+视频退订+{UID}
+视频列表
 
-哔哩番剧订阅+{番剧名}
-哔哩番剧退订+{番剧id}
-哔哩番剧列表
+番剧订阅+{番剧名}
+番剧退订+{番剧id}
+番剧列表
 """
 # pylint: disable=R0915
 import re
 
-from EAbotoy import Action, GroupMsg, jconfig
+from EAbotoy import Action, jconfig
+from EAbotoy.model import WeChatMsg
 from EAbotoy.schedule import scheduler
 from EAbotoy.session import Prompt, SessionHandler, ctx, session
 
@@ -26,7 +27,7 @@ bilibili_handler = SessionHandler()
 
 @bilibili_handler.handle
 def _():
-    if ctx.Content.startswith("哔哩视频订阅"):
+    if ctx.Content.startswith("视频订阅"):
         # 确定订阅UP的mid, 如果无法确定则随时退出
         # 通过格式1 -> UID:数字
         try:
@@ -59,7 +60,7 @@ def _():
 
         db = DB()
 
-        if db.subscribe_up(ctx.FromGroupId, mid):
+        if db.subscribe_up(ctx.GroupId, mid):
             upinfo = API.get_up_info_by_mid(mid)
             if upinfo is None:
                 bilibili_handler.finish(f"成功订阅UP主：{mid}")
@@ -73,7 +74,7 @@ def _():
         else:
             bilibili_handler.finish("本群已订阅该UP主")
 
-    elif ctx.Content.startswith("哔哩番剧订阅"):
+    elif ctx.Content.startswith("番剧订阅"):
         keyword = ctx.Content[6:]
         bangumis = API.search_bangumi_by_keyword(keyword)
         if not bangumis:
@@ -99,7 +100,7 @@ def _():
 
         db = DB()
 
-        if db.subscribe_bangumi(ctx.FromGroupId, choose_bangumi.media_id):
+        if db.subscribe_bangumi(ctx.GroupId, choose_bangumi.media_id):
             bilibili_handler.finish(
                 Prompt.group_picture(
                     url=choose_bangumi.cover,
@@ -115,28 +116,30 @@ def _():
 
 # ==============
 # 用于定时任务
-action = None
+action: Action = None
+
+
 # ==============
 
 # 订阅使用session， 其他操作使用普通指令
-def receive_group_msg(ctx: GroupMsg):
+def receive_wx_msg(ctx: WeChatMsg):
     global action  # pylint: disable=W0603
     if action is None:
         # pylint: disable=W0212
         action = Action(ctx.CurrentWxid, host=ctx._host, port=ctx._port)
 
-    if ctx.FromUserId == ctx.CurrentWxid or ctx.FromUserId != jconfig.master:
+    if ctx.ActionUserName == ctx.CurrentWxid or ctx.ActionUserName != jconfig.master:
         return
 
     # 退订UP
-    if ctx.Content.startswith("哔哩视频退订"):
+    if ctx.Content.startswith("视频退订"):
         try:
             mid = re.findall(r"(\d+)", ctx.Content)[0]
         except Exception:
             msg = "UID应为数字"
         else:
             db = DB()
-            if db.unsubscribe_up(ctx.FromGroupId, mid):
+            if db.unsubscribe_up(ctx.GroupId, mid):
                 upinfo = API.get_up_info_by_mid(mid)
                 if upinfo is not None:
                     msg = "成功退订UP主：{}".format(upinfo.name)
@@ -144,11 +147,11 @@ def receive_group_msg(ctx: GroupMsg):
                     msg = "成功退订UP主：{}".format(mid)
             else:
                 msg = "本群未订阅该UP主"
-        action.sendGroupText(ctx.FromGroupId, msg)
+        action.sendWxText(ctx.GroupId, msg)
     # 查看订阅UP列表
-    elif ctx.Content == "哔哩视频列表":
+    elif ctx.Content == "视频列表":
         db = DB()
-        mids = db.get_ups_by_gid(ctx.FromGroupId)
+        mids = db.get_ups_by_gid(ctx.GroupId)
         if mids:
             ups = []
             for mid in mids:
@@ -160,17 +163,17 @@ def receive_group_msg(ctx: GroupMsg):
             msg = "本群已订阅UP主：\n" + "\n".join(ups)
         else:
             msg = "本群还没有订阅过一个UP主"
-        action.sendGroupText(ctx.FromGroupId, msg)
+        action.sendWxText(ctx.GroupId, msg)
 
     # 退订番剧
-    elif ctx.Content.startswith("哔哩番剧退订"):
+    elif ctx.Content.startswith("番剧退订"):
         try:
             mid = re.findall(r"(\d+)", ctx.Content)[0]
         except Exception:
             msg = "番剧ID应为数字"
         else:
             db = DB()
-            if db.unsubscribe_bangumi(ctx.FromGroupId, mid):
+            if db.unsubscribe_bangumi(ctx.GroupId, mid):
                 # 通过最新集数中的api获取番剧基本信息勉勉强强满足需求
                 bangumi = API.get_latest_ep_by_media_id(mid)
                 if bangumi is not None:
@@ -179,11 +182,11 @@ def receive_group_msg(ctx: GroupMsg):
                     msg = "成功退订番剧：{}".format(mid)
             else:
                 msg = "本群未订阅该UP主"
-        action.sendGroupText(ctx.FromGroupId, msg)
+        action.sendWxText(ctx.GroupId, msg)
     # 查看订阅番剧列表
-    elif ctx.Content == "哔哩番剧列表":
+    elif ctx.Content == "番剧列表":
         db = DB()
-        mids = db.get_bangumi_by_gid(ctx.FromGroupId)
+        mids = db.get_bangumi_by_gid(ctx.GroupId)
         if mids:
             msgs = []
             for mid in mids:
@@ -195,7 +198,7 @@ def receive_group_msg(ctx: GroupMsg):
             msg = "本群已订阅番剧：\n" + "\n".join(msgs)
         else:
             msg = "本群还没有订阅过一部番剧"
-        action.sendGroupText(ctx.FromGroupId, msg)
+        action.sendWxText(ctx.GroupId, msg)
 
     # 其他操作逻辑转到session操作
     else:
@@ -219,10 +222,9 @@ def check_up_video():
                 )
                 if action is not None:
                     for group in db.get_gids_by_up_mid(mid):
-                        action.sendGroupPic(
+                        action.sendImg(
                             group,
-                            content=info,
-                            picUrl=video.pic,
+                            imageUrl=video.pic,
                         )
 
 
@@ -238,10 +240,9 @@ def check_bangumi():
                 )
                 if action is not None:
                     for group in db.get_gids_by_bangumi_mid(mid):
-                        action.sendGroupPic(
+                        action.sendImg(
                             group,
-                            content=info,
-                            picUrl=ep.cover,
+                            imageUrl=ep.cover,
                         )
 
 
