@@ -88,7 +88,6 @@ class Action:
             host: Optional[str] = None,
             timeout: int = 20,
             is_use_queue: bool = True,
-            queue_delay: Union[int, float] = 1.4,
 
     ):
         self.host = utils.check_schema(host or jconfig.host)

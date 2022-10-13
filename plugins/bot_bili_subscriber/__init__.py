@@ -9,8 +9,12 @@
 番剧退订+{番剧id}
 番剧列表
 """
+import base64
 # pylint: disable=R0915
 import re
+from io import BytesIO
+
+import requests
 
 from EAbotoy import Action, jconfig, Text, Picture
 from EAbotoy.model import WeChatMsg
@@ -74,7 +78,7 @@ def _():
             if upinfo is None:
                 bilibili_handler.finish(f"成功订阅UP主：{mid}")
             else:
-                Picture(pic_url=upinfo.face, ctx=ctx)
+                send_img(ctx.GroupId, upinfo.face)
                 bilibili_handler.finish(f"成功订阅UP主：{upinfo.name}")
         else:
             bilibili_handler.finish("本群已订阅该UP主")
@@ -106,13 +110,19 @@ def _():
         db = DB()
 
         if db.subscribe_bangumi(ctx.GroupId, choose_bangumi.media_id):
-            Picture(pic_url=choose_bangumi.cover, ctx=ctx)
+            send_img(ctx.GroupId, choose_bangumi.cover)
             bilibili_handler.finish(f"成功订阅番剧: {clean_html(choose_bangumi.title)}")
         else:
             bilibili_handler.finish("本群已订阅过该番剧")
 
     # -----------------------
     bilibili_handler.finish()
+
+
+def send_img(group, imageUrl):
+    res = requests.get(imageUrl)
+    base = str(base64.b64encode(BytesIO(res.content).read()), encoding="utf-8")
+    action.sendImg(group, imageBase64=base)
 
 
 # ==============
@@ -224,10 +234,11 @@ def check_up_video():
                 )
                 if action is not None:
                     for group in db.get_gids_by_up_mid(mid):
-                        action.sendImg(
+                        send_img(
                             group,
                             imageUrl=video.pic,
                         )
+                        Text(info, ctx=ctx)
 
 
 def check_bangumi():
@@ -242,10 +253,11 @@ def check_bangumi():
                 )
                 if action is not None:
                     for group in db.get_gids_by_bangumi_mid(mid):
-                        action.sendImg(
+                        send_img(
                             group,
                             imageUrl=ep.cover,
                         )
+                        Text(info, ctx=ctx)
 
 
 scheduler.add_job(check_up_video, "interval", minutes=5)
