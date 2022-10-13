@@ -20,14 +20,15 @@ def get_answer(input):
     }
 
     json_data = {
-        'prompt': input,
+        'prompt': input + '\n回答：',
         'model': 'xl',
-        'max_tokens': 128,
-        'temperature': 0.95,
+        'max_tokens': 64,
+        'temperature': 0.8,
         'top_p': 0.95,
         'top_k': 50,
         'n': 1,
-        'echo': False
+        'echo': False,
+        'stop': '。'
     }
 
     response = requests.post('https://welm.weixin.qq.com/v1/completions', headers=headers, json=json_data)
