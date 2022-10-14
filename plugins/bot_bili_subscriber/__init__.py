@@ -238,7 +238,7 @@ def check_up_video():
                             group,
                             imageUrl=video.pic,
                         )
-                        action.sendWxTsend(group, info)
+                        action.sendWxText(group, info)
 
 
 def check_bangumi():
@@ -257,7 +257,7 @@ def check_bangumi():
                             group,
                             imageUrl=ep.cover,
                         )
-                        action.sendWxTsend(group, info)
+                        action.sendWxText(group, info)
 
 
 scheduler.add_job(check_up_video, "interval", minutes=5)
