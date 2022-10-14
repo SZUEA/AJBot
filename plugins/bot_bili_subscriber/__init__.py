@@ -140,8 +140,6 @@ def receive_wx_msg(ctx: WeChatMsg):
         # pylint: disable=W0212
         action = Action(ctx.CurrentWxid, host=ctx._host, port=ctx._port)
 
-    if ctx.ActionUserName == ctx.CurrentWxid or ctx.ActionUserName != jconfig.master:
-        return
 
     # 退订UP
     if ctx.Content.startswith("视频退订"):
