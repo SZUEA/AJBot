@@ -154,7 +154,9 @@ def receive_wx_msg(ctx: WeChatMsg):
         return
 
     try:
-        wordlist.index(guess_word)
+        if wordlist.get(guess_word) is None:
+            Text("无效单词，'{}' 不在单词表中".format(guess_word), True, ctx)
+            return
     except ValueError:
         Text("无效单词，'{}' 不在单词表中".format(guess_word), True, ctx)
         return
