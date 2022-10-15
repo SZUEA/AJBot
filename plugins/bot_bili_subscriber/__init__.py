@@ -140,8 +140,6 @@ def receive_wx_msg(ctx: WeChatMsg):
         # pylint: disable=W0212
         action = Action(ctx.CurrentWxid, host=ctx._host, port=ctx._port)
 
-    if ctx.ActionUserName == ctx.CurrentWxid or ctx.ActionUserName != jconfig.master:
-        return
 
     # 退订UP
     if ctx.Content.startswith("视频退订"):
@@ -238,7 +236,7 @@ def check_up_video():
                             group,
                             imageUrl=video.pic,
                         )
-                        Text(info, ctx=ctx)
+                        action.sendWxText(group, info)
 
 
 def check_bangumi():
@@ -257,7 +255,7 @@ def check_bangumi():
                             group,
                             imageUrl=ep.cover,
                         )
-                        Text(info, ctx=ctx)
+                        action.sendWxText(group, info)
 
 
 scheduler.add_job(check_up_video, "interval", minutes=5)
