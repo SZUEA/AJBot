@@ -233,7 +233,7 @@ def check_up_video():
                         action.sendApp(group,
                                        '<appmsg appid="wxcb8d4298c6a09bcb" sdkver="0">\n\t\t'
                                        f'<title>{video.title}</title>\n\t\t'
-                                       f'<des>UP主：{video.author}\n小飞棍来咯</des>'
+                                       f'<des>UP主：{video.author}\n{video.description}</des>'
                                        '\n\t\t<username />\n\t\t'
                                        '<action>view</action>\n\t\t'
                                        '<type>4</type>\n\t\t'
