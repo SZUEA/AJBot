@@ -153,6 +153,7 @@ class Action:
             imageUrl: str = "",
             imageBase64: str = "",
             imagePath: str = "",
+            text: str = ""
     ):
         """发送图片消息"""
         assert any([imageUrl, imageBase64, imagePath]), "缺少参数"
@@ -166,11 +167,16 @@ class Action:
             arg['ImageBase64'] = imageBase64
         elif imagePath != "":
             arg['ImagePath'] = imagePath
-
-        return self._post(
+        if text != '':
+            return self._post(
+                "SendImage",
+                arg,
+            )
+        self._post(
             "SendImage",
             arg,
         )
+        return self.sendWxText(toUserName, text)
 
     def sendCdnImg(
             self,

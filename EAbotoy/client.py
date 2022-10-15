@@ -136,8 +136,6 @@ class Botoy:
         self._close_callbacks.append(self._pool.shutdown)
 
         # 初始化消息包接收函数
-        # self._friend_msg_handler = self._msg_handler_factory(FriendMsg)
-        # self._group_msg_handler = self._msg_handler_factory(GroupMsg)
         self._event_handler = self._msg_handler_factory(EventMsg)
         self._wx_msg_handler = self._msg_handler_factory(WeChatMsg)
 

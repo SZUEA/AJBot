@@ -11,20 +11,20 @@ from . import macro
 from .action import Action
 from .async_action import AsyncAction
 from .collection import MsgTypes
-from .model import WeChatMsg, WeChatMsg
+from .model import WeChatMsg, WeChatMsg, EventMsg
 from .utils import file_to_base64
 
 
-def find_ctx(back_stack: int = 1) -> Union[WeChatMsg, WeChatMsg]:
+def find_ctx(back_stack: int = 1) -> Union[WeChatMsg, EventMsg]:
     back = inspect.currentframe().f_back  # type: ignore
     for _ in range(back_stack):
         back = back.f_back  # type: ignore
     locals = back.f_locals  # type: ignore
 
     ctx = locals.get("ctx")
-    if not isinstance(ctx, (WeChatMsg, WeChatMsg)):
+    if not isinstance(ctx, (WeChatMsg, EventMsg)):
         for v in locals.values():
-            if isinstance(v, (WeChatMsg, WeChatMsg)):
+            if isinstance(v, (WeChatMsg, EventMsg)):
                 ctx = v
                 break
 

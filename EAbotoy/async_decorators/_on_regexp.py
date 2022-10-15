@@ -1,7 +1,7 @@
 import re
-from etyping import Union
+from typing import Union
 
-from ..model import FriendMsg, GroupMsg
+from ..model import WeChatMsg
 
 
 def on_regexp(pattern: Union[str, re.Pattern]):
@@ -16,7 +16,7 @@ def on_regexp(pattern: Union[str, re.Pattern]):
 
     def deco(func):
         async def inner(ctx):
-            assert isinstance(ctx, (GroupMsg, FriendMsg))
+            assert isinstance(ctx, WeChatMsg)
             match = re.match(pattern, ctx.Content)
             if match:
                 setattr(ctx, "_match", match)

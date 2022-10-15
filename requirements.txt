@@ -1,4 +1,3 @@
-botoy
 pillow
 aiofiles
 qrcode

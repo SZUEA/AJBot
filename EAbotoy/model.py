@@ -23,7 +23,6 @@ class WeChatMsg:
     imgCDNContent: str
     imgMd5: str
 
-
     emojiMd5: str
 
     CreateTime: int
@@ -34,9 +33,10 @@ class WeChatMsg:
     ActionUserName: str
     ActionNickName: str
 
+    SenderId: str
+
     IsGroup: bool = False
     GroupId: str = ""
-    MessageSenderId: str
     master: str
 
     isAtMsg: bool = False
@@ -88,6 +88,7 @@ class WeChatMsg:
             self.GroupId = self.FromUserName
         else:
             self.__dict__['ActionUserName'] = self.FromUserName
+        self.SenderId = self.ActionUserName
 
         if self.MsgType == MsgTypes.ImgMsg:
             self.imgCDNContent = self.Content
@@ -102,8 +103,6 @@ class WeChatMsg:
                 ",")
             self.atUserIds = [user for user in self.atUserIds if user != ""]
             self.atUserNames = [i + ' ' for i in findall(r"(@.*?)\u2005", self.Content)]
-
-        self.MessageSenderId = self.ActionUserName
 
     def __setattr__(self, name, value):
         if name in (
