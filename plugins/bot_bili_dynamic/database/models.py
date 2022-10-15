@@ -45,13 +45,13 @@ class BaseModel(Model):
 
 # TODO 自定义默认权限
 class Sub(BaseModel):
-    type = CharField(max_length=10)
-    type_id = IntField()
+    type = CharField(max_length=10, null=True)
+    type_id = CharField(max_length=20)
     uid = IntField()
     live = BooleanField()  # default=True
     dynamic = BooleanField()  # default=True
     at = BooleanField()  # default=False
-    bot_id = IntField()
+    bot_id = CharField(max_length=20)
 
 
 class User(BaseModel):
@@ -60,7 +60,7 @@ class User(BaseModel):
 
 
 class Group(BaseModel):
-    id = IntField(pk=True)
+    id = CharField(max_length=20, pk=True)
     admin = BooleanField()  # default=True
 
 

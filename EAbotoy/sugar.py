@@ -252,26 +252,26 @@ class _S:
     #                 return action.sendFriendVoice(ctx.FromUin, voiceBase64Buf=file_to_base64(data))  # type: ignore
     #
     #     return None
-
-    async def atext(self, text: str, at: bool = False):
-        """发送文字
-        :param text: 发送的文字内容
-        :param at: 是否要艾特该用户
-        """
-        ctx = self.ctx
-        async with AsyncAction.from_ctx(ctx) as action:
-            if isinstance(ctx):
-                return await action.sendGroupText(
-                    ctx.FromGroupId, text, atUser=ctx.FromUserId if at else 0
-                )
-            elif isinstance(ctx):
-                if ctx.TempUin:
-                    return await action.sendPrivateText(ctx.FromUin, ctx.TempUin, text)
-                elif ctx.MsgType == MsgTypes.PhoneMsg:
-                    return await action.sendPhoneText(text)
-                else:
-                    return await action.sendFriendText(ctx.FromUin, text)
-
+    #
+    # async def atext(self, text: str, at: bool = False):
+    #     """发送文字
+    #     :param text: 发送的文字内容
+    #     :param at: 是否要艾特该用户
+    #     """
+    #     ctx = self.ctx
+    #     async with AsyncAction.from_ctx(ctx) as action:
+    #         if isinstance(ctx):
+    #             return await action.sendGroupText(
+    #                 ctx.FromGroupId, text, atUser=ctx.FromUserId if at else 0
+    #             )
+    #         elif isinstance(ctx):
+    #             if ctx.TempUin:
+    #                 return await action.sendPrivateText(ctx.FromUin, ctx.TempUin, text)
+    #             elif ctx.MsgType == MsgTypes.PhoneMsg:
+    #                 return await action.sendPhoneText(text)
+    #             else:
+    #                 return await action.sendFriendText(ctx.FromUin, text)
+    #
     # async def aimage(
     #         self, data: _T_Data, text: str = "", at: bool = False, type: int = 0
     # ):

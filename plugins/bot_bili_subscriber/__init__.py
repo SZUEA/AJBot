@@ -27,7 +27,7 @@ from .db import DB
 from .utils import clean_html
 
 # 订阅逻辑
-bilibili_handler = SessionHandler()
+bilibili_handler = SessionHandler().receive_wx_msg()
 
 white_groups = ['18728854191@chatroom', '18803656716@chatroom']
 
@@ -224,19 +224,22 @@ def check_up_video():
         video = API.get_latest_video_by_mid(mid)
         if video is not None:
             if db.judge_up_updated(mid, video.created):
-                info = "UP主<{}>发布了新视频!\n{}\n{}\n{}".format(
-                    video.author,
-                    video.title,
-                    video.description,
-                    video.bvid,
-                )
                 if action is not None:
                     for group in db.get_gids_by_up_mid(mid):
                         send_img(
                             group,
                             imageUrl=video.pic,
                         )
-                        action.sendWxText(group, info)
+                        action.sendApp(group,
+                                       '<appmsg appid="wxcb8d4298c6a09bcb" sdkver="0">\n\t\t'
+                                       f'<title>{video.title}</title>\n\t\t'
+                                       f'<des>UP主：{video.author}\n小飞棍来咯</des>'
+                                       '\n\t\t<username />\n\t\t'
+                                       '<action>view</action>\n\t\t'
+                                       '<type>4</type>\n\t\t'
+                                       '<showtype>0</showtype>\n\t\t'
+                                       f'<content />\n\t\t<url>https://m.bilibili.com/video/{video.bvid}</url>\n\t\t'
+                                       '</appmsg>')
 
 
 def check_bangumi():
@@ -259,4 +262,4 @@ def check_bangumi():
 
 
 scheduler.add_job(check_up_video, "interval", minutes=5)
-scheduler.add_job(check_bangumi, "interval", minutes=10)
+# scheduler.add_job(check_bangumi, "interval", minutes=10)

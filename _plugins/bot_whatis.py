@@ -28,7 +28,7 @@ whatis_handler = SessionHandler(
     ignore_botself,
     these_msgtypes(MsgTypes.TextMsg),
     startswith("查询"),
-).receive_group_msg()
+).receive_wx_msg()
 
 
 @whatis_handler.handle

@@ -216,6 +216,24 @@ class Action:
             arg,
         )
 
+    def sendApp(
+            self,
+            toUserName: str,
+            content: str,
+    ):
+        """发送好友图片消息"""
+
+        arg = {
+            "ToUserName": toUserName,
+            "Content": content,
+            "MsgType": 49
+        }
+
+        return self._post(
+            "SendAppMsg",
+            arg,
+        )
+
     ############################################################################
     def revokeMsg(
             self,
