@@ -87,7 +87,7 @@ def prompt_new_game(session):
 
 def prompt_word_trans(format, word):
     wordtrans = wordlist.get(word.lower())
-    if wordtrans is not None and len(wordtrans) > 1 and len(wordtrans[1].strip()) > 0:
+    if wordtrans is not None:
         return format.format(wordtrans.strip())
     return ""
 
