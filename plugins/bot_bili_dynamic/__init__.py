@@ -121,8 +121,8 @@ async def del_sub():
         result = False
 
     if result:
-        await Text(f"已取关 {name}（{uid}）", ctx=ctx)
-    await Text(f"UID（{uid}）未关注", ctx=ctx)
+        Text(f"已取关 {name}（{uid}）", ctx=ctx)
+    Text(f"UID（{uid}）未关注", ctx=ctx)
 
 
 async def sub_list():
@@ -133,9 +133,9 @@ async def sub_list():
         user = await db.get_user(uid=sub.uid)
         assert user is not None
         message += (
-            f"{user.name}（{user.uid}）"
+            f"{user.name}（{user.uid}\n"
             # f"直播：{'开' if sub.live else '关'}，"
             # f"动态：{'开' if sub.dynamic else '关'}，"
             # f"全体：{'开' if sub.at else '关'}\n"
         )
-    await Text(message, ctx=ctx)
+    Text(message, ctx=ctx)
