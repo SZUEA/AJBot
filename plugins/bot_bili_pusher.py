@@ -158,5 +158,5 @@ async def video_sched():
 
 
 asyncio.run(dy_sched())
-async_scheduler.add_job(video_sched, "interval", minutes=10)
+async_scheduler.add_job(video_sched, "interval", minutes=5)
 async_scheduler.add_job(dy_sched, "interval", minutes=5)
