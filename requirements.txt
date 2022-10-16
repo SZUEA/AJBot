@@ -10,3 +10,5 @@ bilireq
 pypika-tortoise
 tortoise-orm
 playwright
+tinyrecord
+tinydb
