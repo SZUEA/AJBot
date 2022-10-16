@@ -129,10 +129,9 @@ async def dy_sched():
     uids = await db.get_uid_list("dynamic")
     if not uids:
         return
-    browser = await init_browser()
+    await init_browser()
     for uid in uids:
         await dy_sched_up(uid)
-    await browser.close()
 
 
 async def check_up_video(uid):
@@ -168,10 +167,11 @@ async def video_sched():
 
 
 def run_scheduler():
+    logger.info("执行定时任务")
     loop = asyncio.new_event_loop()
     loop.run_until_complete(dy_sched())
     loop.run_until_complete(video_sched())
 
 
-scheduler.add_job(run_scheduler, "interval", minutes=2)
-asyncio.run(dy_sched())
+scheduler.add_job(run_scheduler, "interval", minutes=2, seconds=30)
+run_scheduler()
