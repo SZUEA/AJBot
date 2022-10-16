@@ -22,11 +22,13 @@ async def init_browser(proxy=None, **kwargs) -> Browser:
 
 
 async def get_browser() -> Browser:
+    if _browser is None:
+        await init_browser()
     assert _browser
     return _browser
 
 
-async def get_dynamic_screenshot(dynamic_id, style='pc'):
+async def get_dynamic_screenshot(dynamic_id, style='mobile'):
     """获取动态截图"""
     if style.lower() == "mobile":
         return await get_dynamic_screenshot_mobile(dynamic_id)
@@ -162,4 +164,3 @@ async def check_playwright_env():
         )
 
 
-asyncio.run(init_browser())

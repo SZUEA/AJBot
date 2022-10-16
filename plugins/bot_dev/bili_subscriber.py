@@ -22,9 +22,8 @@ from EAbotoy.schedule import scheduler
 from EAbotoy.session import Prompt, SessionHandler, ctx, session
 from EAbotoy.decorators import from_these_groups
 
-from .api import API
-from .db import DB
-from .utils import clean_html
+from ..bot_bili_dynamic.api import API
+from ..bot_bili_dynamic.sub_db import DB
 
 # 订阅逻辑
 bilibili_handler = SessionHandler().receive_wx_msg()
@@ -32,7 +31,7 @@ bilibili_handler = SessionHandler().receive_wx_msg()
 white_groups = ['18728854191@chatroom', '18803656716@chatroom']
 
 
-@bilibili_handler.handle
+# @bilibili_handler.handle
 def _():
     if not ctx.IsGroup:
         bilibili_handler.finish()
@@ -139,7 +138,6 @@ def receive_wx_msg(ctx: WeChatMsg):
     if action is None:
         # pylint: disable=W0212
         action = Action(ctx.CurrentWxid, host=ctx._host, port=ctx._port)
-
 
     # 退订UP
     if ctx.Content.startswith("视频退订"):
@@ -261,5 +259,8 @@ def check_bangumi():
                         action.sendWxText(group, info)
 
 
-scheduler.add_job(check_up_video, "interval", minutes=5)
+def clean_html(string):
+    return re.sub(r"</?.+?/?>", "", string)
+
+# scheduler.add_job(check_up_video, "interval", minutes=5)
 # scheduler.add_job(check_bangumi, "interval", minutes=10)

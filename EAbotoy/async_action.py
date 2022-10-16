@@ -36,9 +36,9 @@ class AsyncAction:
         )
 
     @property
-    def wxid(self) -> int:
-        if self._wxid == 0:
-            self._wxid = self.getAllBots()[0]
+    def wxid(self) -> str:
+        # if self._wxid == "":
+        #     self._wxid = self.getAllBots()[0]
         return self._wxid
 
     @classmethod
@@ -146,6 +146,24 @@ class AsyncAction:
             arg,
         )
 
+    async def sendApp(
+            self,
+            toUserName: str,
+            content: str,
+    ):
+        """发送好友图片消息"""
+
+        arg = {
+            "ToUserName": toUserName,
+            "Content": content,
+            "MsgType": 49
+        }
+
+        return await self.post(
+            "SendAppMsg",
+            arg,
+        )
+
     ############################################################################
     async def revokeMsg(
             self,
@@ -180,8 +198,8 @@ class AsyncAction:
         """基础请求方法, 提供部分提示信息，出错返回空字典，其他返回服务端响应结果"""
         params = params or {}
         params["funcname"] = funcname
-        if not params.get("qq"):
-            params["qq"] = await self.qq
+        if not params.get("wxid"):
+            params["wxid"] = self.wxid
 
         # 发送请求
         try:

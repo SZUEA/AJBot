@@ -1,7 +1,7 @@
 """汉字转拼音：拼音{汉字}"""
 import requests
 
-from EAbotoy.async_decorators import on_command
+from EAbotoy.decorators import on_command
 from EAbotoy.collection import MsgTypes
 from EAbotoy.decorators import startswith, these_msgtypes
 from EAbotoy.model import WeChatMsg

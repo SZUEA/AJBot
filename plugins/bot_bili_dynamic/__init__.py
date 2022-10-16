@@ -12,7 +12,7 @@ from EAbotoy.session import ctx, Prompt, SessionHandler, session
 from .database import DB as db
 from bilireq.user import get_user_info
 
-from plugins.bot_bili_subscriber import API
+from .api import API
 
 bilibili_handler = SessionHandler().receive_wx_msg()
 
@@ -46,7 +46,7 @@ def get_UID(keyword_len: int):
     keyword = ctx.Content[keyword_len:]
     ups = API.search_up_by_keyword(keyword)
     if not ups:
-        Text("未找到相关UP，请重试或修改指令内容")
+        Text("未找到相关UP，请重试或修改指令内容", ctx=ctx)
         return
     if len(ups) == 1:
         uid = ups[0].mid
@@ -61,10 +61,10 @@ def get_UID(keyword_len: int):
             try:
                 uid = ups[int(choose)].mid
             except IndexError:
-                Text("序号错误，已退出当前会话!")
+                Text("序号错误，已退出当前会话!", ctx=ctx)
                 return
         else:
-            Text("序号错误，已退出当前会话!")
+            Text("序号错误，已退出当前会话!", ctx=ctx)
             return
     return uid
 
@@ -80,14 +80,14 @@ async def add_sub():
             name = (await get_user_info(uid, reqtype="web"))["name"]
         except ResponseCodeError as e:
             if e.code == -400 or e.code == -404:
-                Text("UID不存在，注意UID不是房间号")
+                Text("UID不存在，注意UID不是房间号", ctx=ctx)
                 return
             elif e.code == -412:
-                Text("操作过于频繁IP暂时被风控，请半小时后再尝试")
+                Text("操作过于频繁IP暂时被风控，请半小时后再尝试", ctx=ctx)
                 return
             else:
                 Text(
-                    f"未知错误，请联系开发者反馈"
+                    f"未知错误，请联系开发者反馈", ctx=ctx
                 )
                 return
     result = await db.add_sub(
@@ -101,9 +101,9 @@ async def add_sub():
         at=False,
     )
     if result:
-        Text(f"已关注 {name}（{uid}）")
+        Text(f"已关注 {name}（{uid}）", ctx=ctx)
         return
-    Text(f"{name}（{uid}）已经关注了")
+    Text(f"{name}（{uid}）已经关注过了", ctx=ctx)
 
 
 async def del_sub():
@@ -121,8 +121,8 @@ async def del_sub():
         result = False
 
     if result:
-        await Text(f"已取关 {name}（{uid}）")
-    await Text(f"UID（{uid}）未关注")
+        await Text(f"已取关 {name}（{uid}）", ctx=ctx)
+    await Text(f"UID（{uid}）未关注", ctx=ctx)
 
 
 async def sub_list():
@@ -138,4 +138,4 @@ async def sub_list():
             # f"动态：{'开' if sub.dynamic else '关'}，"
             # f"全体：{'开' if sub.at else '关'}\n"
         )
-    await Text(message)
+    await Text(message, ctx=ctx)

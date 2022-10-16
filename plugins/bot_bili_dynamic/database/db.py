@@ -213,7 +213,7 @@ class DB:
     async def next_uid(cls, func):
         """获取下一个要爬取的 UID"""
         func = uid_list[func]
-        if func["list"] == []:
+        if not func["list"]:
             return None
 
         if func["index"] >= len(func["list"]):

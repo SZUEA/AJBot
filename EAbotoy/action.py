@@ -109,9 +109,7 @@ class Action:
         # self._send_thread.setDaemon(True)
 
     @property
-    def wxid(self) -> int:
-        if self._wxid == 0:
-            self._wxid = self.getAllBots()[0]
+    def wxid(self) -> str:
         return self._wxid
 
     @classmethod
