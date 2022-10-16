@@ -126,7 +126,7 @@ def wd_check_game_win(session):
 
 @plugin_receiver.wx
 @on_command(".wd")
-def guess_wordle(ctx: WeChatMsg, arg):
+def guess_wordle(ctx: WeChatMsg, arg, command):
     wxid = ctx.FromUserName
 
     guess_word = arg.lower()
@@ -167,7 +167,7 @@ def guess_wordle(ctx: WeChatMsg, arg):
 
 @plugin_receiver.wx
 @on_command(".wdstart")
-def start_game(ctx: WeChatMsg, arg):
+def start_game(ctx: WeChatMsg, arg, command):
     session = wd_start_personal(ctx.FromUserName)
     Text(
         prompt_new_game(session) + "，使用 .wd [单词] 开始猜词",

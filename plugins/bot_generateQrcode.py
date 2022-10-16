@@ -20,6 +20,6 @@ def gen_qrcode(text: str) -> str:
 
 
 @on_command("测码")
-def receive_wx_msg(ctx: WeChatMsg, arg):
+def receive_wx_msg(ctx: WeChatMsg, arg, command):
     if arg != '':
         Picture(pic_base64=gen_qrcode(arg))

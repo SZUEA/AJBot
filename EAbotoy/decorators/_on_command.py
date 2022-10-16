@@ -18,14 +18,14 @@ def on_command(commands: Union[Dict[str, str], List[str], str]):
                 arg = content[len(commands):].strip()
                 command = commands
             elif isinstance(commands, List):
-                pre = content.strip(" ")[0]
+                pre = content.split(" ")[0]
                 if pre not in commands:
                     return None
 
                 command = commands[commands.index(pre)]
                 arg = content[len(command):].strip()
             elif isinstance(commands, Dict):
-                pre = content.strip(" ")[0]
+                pre = content.split(" ")[0]
                 command = commands.get(pre)
                 if command is None:
                     return None

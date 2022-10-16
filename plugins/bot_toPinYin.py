@@ -9,7 +9,7 @@ from EAbotoy.sugar import Text
 
 
 @on_command("拼音")
-def receive_wx_msg(ctx: WeChatMsg, arg):
+def receive_wx_msg(ctx: WeChatMsg, arg, command):
     word = arg
     if word:
         resp = requests.get(

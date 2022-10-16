@@ -1,3 +1,4 @@
+import asyncio
 import os
 import sys
 from typing import Optional
@@ -161,4 +162,4 @@ async def check_playwright_env():
         )
 
 
-get_driver().on_startup(init_browser)
+asyncio.run(init_browser())

@@ -32,16 +32,19 @@ def get_answer(input):
     }
 
     response = requests.post('https://welm.weixin.qq.com/v1/completions', headers=headers, json=json_data)
-    text = json.loads(response.content)["choices"][0]['text']
-    answer = 'EAbot遗憾地告诉你：生成错误！！以下为可能的错误原因：\n1、输入的文字过长\n2、输入或者输出违反相关法律法规不予显示\n3、奇奇怪怪的bug'
-    if text:
-        answer = text.replace('\n', '')\
-            .replace('@', '').replace('\r', '').replace('>', '').replace('匿名用户','').replace('[图片]', '')
+    answer = '接口超限，请明天再试'
+    if response.content:
+        text = json.loads(response.content)["choices"][0]['text']
+        if not text:
+            answer = 'EAbot遗憾地告诉你：生成错误！！以下为可能的错误原因：\n1、输入的文字过长\n2、输入或者输出违反相关法律法规不予显示\n3、奇奇怪怪的bug'
+        else:
+            answer = text.replace('\n', '')\
+                .replace('@', '').replace('\r', '').replace('>', '').replace('匿名用户','').replace('[图片]', '')
     return answer
 
 
 @on_command([".cc", '。cc'])
-def receive_wx_msg(ctx: WeChatMsg, arg):  # 函数名字只能是这个才能触发
+def receive_wx_msg(ctx: WeChatMsg, arg, command):  # 函数名字只能是这个才能触发
     answer = get_answer(arg)
     action.sendWxText(toUserName=ctx.FromUserName,
                       content=answer, )
