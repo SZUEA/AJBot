@@ -37,8 +37,7 @@ def _():
     else:
         bilibili_handler.finish()
         return
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(method)
+    asyncio.run(method)
     bilibili_handler.finish()
 
 
