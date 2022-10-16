@@ -3,8 +3,7 @@ import os
 import sys
 from typing import Optional
 
-from nonebot import get_driver
-from nonebot.log import logger
+from EAbotoy import logger
 from playwright.__main__ import main
 from playwright.async_api import Browser, async_playwright
 
