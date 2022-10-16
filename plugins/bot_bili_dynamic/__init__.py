@@ -22,10 +22,10 @@ white_groups = ['18728854191@chatroom', '18803656716@chatroom']
 @bilibili_handler.handle
 def _():
     if not ctx.IsGroup:
-        return
+        bilibili_handler.finish()
     from_group = ctx.FromUserName
     if from_group not in white_groups:
-        return
+        bilibili_handler.finish()
 
     if ctx.Content.startswith("订阅up") or ctx.Content.startswith("b站订阅"):
         asyncio.run(add_sub())
@@ -46,8 +46,7 @@ def get_UID(keyword_len: int):
     keyword = ctx.Content[keyword_len:]
     ups = API.search_up_by_keyword(keyword)
     if not ups:
-        Text("未找到相关UP，请重试或修改指令内容", ctx=ctx)
-        return
+        bilibili_handler.finish("未找到相关UP，请重试或修改指令内容")
     if len(ups) == 1:
         uid = ups[0].mid
     else:
@@ -61,18 +60,16 @@ def get_UID(keyword_len: int):
             try:
                 uid = ups[int(choose)].mid
             except IndexError:
-                Text("序号错误，已退出当前会话!", ctx=ctx)
-                return
+                bilibili_handler.finish("序号错误，已退出当前会话!")
         else:
-            Text("序号错误，已退出当前会话!", ctx=ctx)
-            return
+            bilibili_handler.finish("序号错误，已退出当前会话!")
     return uid
 
 
 async def add_sub():
     uid = get_UID(keyword_len=4)
     if uid is None:
-        return
+        bilibili_handler.finish()
     user = await db.get_user(uid=uid)
     name = user and user.name
     if not name:
@@ -80,16 +77,11 @@ async def add_sub():
             name = (await get_user_info(uid, reqtype="web"))["name"]
         except ResponseCodeError as e:
             if e.code == -400 or e.code == -404:
-                Text("UID不存在，注意UID不是房间号", ctx=ctx)
-                return
+                bilibili_handler.finish("UID不存在，注意UID不是房间号")
             elif e.code == -412:
-                Text("操作过于频繁IP暂时被风控，请半小时后再尝试", ctx=ctx)
-                return
+                bilibili_handler.finish("操作过于频繁IP暂时被风控，请半小时后再尝试")
             else:
-                Text(
-                    f"未知错误，请联系开发者反馈", ctx=ctx
-                )
-                return
+                bilibili_handler.finish(f"未知错误，请联系开发者反馈")
     result = await db.add_sub(
         uid=uid,
         type='group',
@@ -101,16 +93,15 @@ async def add_sub():
         at=False,
     )
     if result:
-        Text(f"已关注 {name}（{uid}）", ctx=ctx)
-        return
-    Text(f"{name}（{uid}）已经关注过了", ctx=ctx)
+        bilibili_handler.finish(f"已关注 {name}（{uid}）")
+    bilibili_handler.finish(f"{name}（{uid}）已经关注过了")
 
 
 async def del_sub():
     """根据 UID 删除 UP 主订阅"""
     uid = get_UID(keyword_len=4)
     if uid is None:
-        return
+        bilibili_handler.finish()
 
     name = getattr(await db.get_user(uid=uid), "name", None)
     if name:
@@ -121,13 +112,14 @@ async def del_sub():
         result = False
 
     if result:
-        Text(f"已取关 {name}（{uid}）", ctx=ctx)
-    Text(f"UID（{uid}）未关注", ctx=ctx)
+        bilibili_handler.finish(f"已取关 {name}（{uid}）")
+    bilibili_handler.finish(f"UID（{uid}）未关注")
 
 
 async def sub_list():
     """发送当前位置的订阅列表"""
-    message = "关注列表（所有群/好友都是分开的）\n\n"
+    message = "关注列表（所有群/好友都是分开的）\n" \
+              "~~~~~~~~~~~~~~~~~~~~~"
     subs = await db.get_sub_list('group', ctx.GroupId)
     for sub in subs:
         user = await db.get_user(uid=sub.uid)
@@ -138,4 +130,4 @@ async def sub_list():
             # f"动态：{'开' if sub.dynamic else '关'}，"
             # f"全体：{'开' if sub.at else '关'}\n"
         )
-    Text(message, ctx=ctx)
+    bilibili_handler.finish(message.strip())
