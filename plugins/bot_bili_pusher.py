@@ -102,7 +102,7 @@ async def dy_sched_up(uid: int):
                 action.sendApp(sets.type_id,
                                '<appmsg appid="wxcb8d4298c6a09bcb" sdkver="0">\n\t\t'
                                f'<title>{text}</title>\n\t\t'
-                               f'<des>{name}</des>'
+                               f'<des>up: {name}\n{text}</des>'
                                '\n\t\t<username />\n\t\t'
                                '<action>view</action>\n\t\t'
                                '<type>5</type>\n\t\t'
