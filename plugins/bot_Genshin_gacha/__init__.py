@@ -1,4 +1,4 @@
-from EAbotoy import decorators as deco
+from EAbotoy import decorators as deco, WeChatMsg
 from EAbotoy.sugar import Text
 
 from .genshin import GenshenGacha
@@ -29,7 +29,9 @@ poolConversion = {
 
 
 @deco.on_regexp(r"原神(.*?)池(.*)连")
-def main(ctx):
+def main(ctx:WeChatMsg):
+    if ctx.FromUserName == '24773935278@chatroom':
+        return
     info = getattr(ctx, "_match")
     if cardPool := poolConversion.get(info[1]):
         if info[2] in digitalConversionDict.keys():
