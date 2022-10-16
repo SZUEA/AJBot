@@ -13,6 +13,7 @@ from .database import DB as db
 from bilireq.user import get_user_info
 
 from .api import API
+from ..bot_bili_pusher import dy_sched_up
 
 bilibili_handler = SessionHandler().receive_wx_msg()
 
@@ -95,6 +96,7 @@ async def add_sub():
     )
     if result:
         bilibili_handler.finish(f"已关注 {name}（{uid}）")
+        await dy_sched_up(int(uid))
     bilibili_handler.finish(f"{name}（{uid}）已经关注过了")
 
 

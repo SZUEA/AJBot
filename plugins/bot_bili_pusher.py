@@ -1,5 +1,6 @@
 """我是模板
 """
+import asyncio
 import base64
 import os
 from io import BytesIO
@@ -29,6 +30,8 @@ async def receive_wx_msg(ctx: WeChatMsg, arg, command):
     isAdmin = ctx.ActionUserName == ctx.master or is_bot_master(ctx.CurrentWxid, ctx.ActionUserName)
     if isAdmin:
         await dy_sched()
+    else:
+        Text("非admin不能查询")
 
 
 def send_img(group, imageUrl):
@@ -154,5 +157,6 @@ async def video_sched():
         await check_up_video(uid)
 
 
+asyncio.run(dy_sched())
 async_scheduler.add_job(video_sched, "interval", minutes=10)
 async_scheduler.add_job(dy_sched, "interval", minutes=5)
