@@ -119,7 +119,7 @@ async def del_sub():
 async def sub_list():
     """发送当前位置的订阅列表"""
     message = "关注列表（所有群/好友都是分开的）\n" \
-              "~~~~~~~~~~~~~~~~~~~~~"
+              "~~~~~~~~~~~~~~~~~~~~~\n"
     subs = await db.get_sub_list('group', ctx.GroupId)
     for sub in subs:
         user = await db.get_user(uid=sub.uid)
