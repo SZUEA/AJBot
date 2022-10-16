@@ -7,7 +7,6 @@ from enum import Enum
 
 from EAbotoy import Action
 from EAbotoy.collection import MsgTypes
-from EAbotoy.decorators import ignore_botself, these_msgtypes
 from dateutil.parser import parse
 
 from EAbotoy.model import WeChatMsg
@@ -33,7 +32,6 @@ goodNightInstructionSet = ["晚", "晚安", "哦呀斯密", "oyasumi", "oyasimi"
 # ==========================================
 
 
-@ignore_botself
 def receive_wx_msg(ctx: WeChatMsg):
     userGroup = ctx.FromUserName
 

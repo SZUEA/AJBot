@@ -2,11 +2,11 @@
 import requests
 
 from EAbotoy.collection import MsgTypes
-from EAbotoy.decorators import ignore_botself, startswith, these_msgtypes
+from EAbotoy.decorators import startswith, these_msgtypes
 from EAbotoy.model import WeChatMsg
 from EAbotoy.sugar import Text
 
-@ignore_botself
+
 @these_msgtypes(MsgTypes.TextMsg)
 @startswith("拼音")
 def receive_wx_msg(ctx: WeChatMsg):

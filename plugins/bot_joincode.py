@@ -4,7 +4,6 @@ import base64
 import os
 from EAbotoy import Action, MsgTypes, sugar
 from EAbotoy.contrib import plugin_receiver
-from EAbotoy.decorators import ignore_botself
 from EAbotoy.model import WeChatMsg
 from plugins.bot_realname.db import join_real_name
 

@@ -8,7 +8,7 @@ import io
 
 from EAbotoy import MsgTypes
 from EAbotoy.contrib import get_cache_dir
-from EAbotoy.decorators import ignore_botself, queued_up, these_msgtypes
+from EAbotoy.decorators import these_msgtypes
 from EAbotoy.model import WeChatMsg
 from EAbotoy.sugar import Picture
 from PIL import Image, ImageDraw, ImageFont
@@ -164,9 +164,7 @@ def combine_img_vertical(left_text: str, right_text, font_size: int = FONT_SIZE)
     return base64.b64encode(buffer.getvalue()).decode()
 
 
-@ignore_botself
 @these_msgtypes(MsgTypes.TextMsg)
-@queued_up  # 发图的操作排队执行成功率更高
 def receive_wx_msg(ctx: WeChatMsg):
     if ctx.Content.startswith("pp "):
         args = [i.strip() for i in ctx.Content.split(" ") if i.strip()]

@@ -3,7 +3,7 @@ import random
 
 from EAbotoy import Action
 from EAbotoy.collection import MsgTypes
-from EAbotoy.decorators import ignore_botself, these_msgtypes
+from EAbotoy.decorators import these_msgtypes
 from EAbotoy.model import WeChatMsg
 from EAbotoy.parser import group as gp
 from EAbotoy.sugar import Text
@@ -221,7 +221,6 @@ def get_niubi(name):
 action = Action()
 
 
-@ignore_botself
 @these_msgtypes(MsgTypes.TextMsg)
 def receive_wx_msg(ctx: WeChatMsg):
     if not ctx.isAtMsg:

@@ -13,7 +13,6 @@ from EAbotoy.model import WeChatMsg
 action = Action(os.environ["wxid"], is_use_queue=True)
 
 
-@deco.ignore_botself
 @these_msgtypes(MsgTypes.TextMsg)
 @deco.in_content("复读")
 def receive_wx_msg(ctx: WeChatMsg):

@@ -21,7 +21,6 @@ from EAbotoy.contrib import plugin_receiver
 from EAbotoy.model import WeChatMsg
 from EAbotoy.collection import MsgTypes
 
-from EAbotoy.decorators import ignore_botself
 from EAbotoy.session import SessionHandler, session
 from EAbotoy.session import ctx
 
@@ -146,9 +145,7 @@ def add_response(_id, rules, response, rule_type, FromUserName, response_type, p
 init_response()
 MAX = 5
 
-honey = SessionHandler(
-    ignore_botself
-).receive_wx_msg()
+honey = SessionHandler().receive_wx_msg()
 
 
 def wait_get(name, st):
@@ -248,7 +245,6 @@ def add_reply():
 
 
 @plugin_receiver.wx
-@ignore_botself
 def go_reply(ctx: WeChatMsg):
     if ctx.Content[0] in ".。?？":
         return
@@ -274,7 +270,6 @@ def go_reply(ctx: WeChatMsg):
 
 
 @plugin_receiver.wx
-@ignore_botself
 def delete_reply(ctx: WeChatMsg):
     if ctx.MsgType != MsgTypes.TextMsg:
         return

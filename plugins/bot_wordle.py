@@ -5,7 +5,7 @@
 """
 
 from EAbotoy.collection import MsgTypes
-from EAbotoy.decorators import ignore_botself, startswith, these_msgtypes
+from EAbotoy.decorators import startswith, these_msgtypes
 from EAbotoy.model import WeChatMsg
 from EAbotoy import sugar, Text
 import random
@@ -123,7 +123,6 @@ def wd_check_game_win(session):
         return "还有 {} 次机会".format(session["total_guesses_allowed"] - len(guesses))
 
 
-@ignore_botself
 @these_msgtypes(MsgTypes.TextMsg)
 @startswith(".wd")
 def receive_wx_msg(ctx: WeChatMsg):
