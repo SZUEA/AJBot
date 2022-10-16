@@ -86,7 +86,8 @@ async def dy_sched_up(uid: int):
             logger.info(f"检测到新动态（{dynamic_id}）：{name}（{uid}）")
 
             try:
-                text = " ".join([i.text for i in dynamic.modules[-3].module_desc.desc])
+                text = "\n".join([" ".join([j.text for j in i]) for i in
+                                  [module.module_desc.desc for module in dynamic.modules] if len(i) != 0])
             except Exception as e:
                 logger.warning(traceback.format_exc())
                 text = f"{name} 的新动态"
@@ -102,7 +103,7 @@ async def dy_sched_up(uid: int):
                 action.sendApp(sets.type_id,
                                '<appmsg appid="wxcb8d4298c6a09bcb" sdkver="0">\n\t\t'
                                f'<title>{text}</title>\n\t\t'
-                               f'<des>up: {name}\n{text}</des>'
+                               f'<des>up: {name}</des>'
                                '\n\t\t<username />\n\t\t'
                                '<action>view</action>\n\t\t'
                                '<type>5</type>\n\t\t'
