@@ -13,7 +13,7 @@ from grpc.aio import AioRpcError
 
 from EAbotoy import logger, WeChatMsg, Text, Action
 from EAbotoy.async_decorators import on_command
-from EAbotoy.schedule import async_scheduler
+from EAbotoy.schedule import async_scheduler, scheduler
 from utils.browser import get_dynamic_screenshot, get_browser, init_browser
 from .bot_bili_dynamic.database import DB as db
 from .bot_bili_dynamic.database import dynamic_offset as offset
@@ -165,6 +165,10 @@ async def video_sched():
         await check_up_video(uid)
 
 
+def run_scheduler():
+    asyncio.run(dy_sched())
+    asyncio.run(video_sched())
+
+
+scheduler.add_job(run_scheduler, "interval", minutes=3)
 asyncio.run(dy_sched())
-async_scheduler.add_job(video_sched, "interval", minutes=5)
-async_scheduler.add_job(dy_sched, "interval", minutes=2)
