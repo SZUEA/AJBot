@@ -28,18 +28,23 @@ def _():
     if from_group not in white_groups:
         bilibili_handler.finish()
 
-    if ctx.Content.startswith("订阅up") or ctx.Content.startswith("b站订阅"):
-        asyncio.run(add_sub())
+    if ctx.Content.startswith("订阅up") or ctx.Content.startswith("关注up"):
+        method = add_sub()
     elif ctx.Content.startswith("取关up"):
-        asyncio.run(del_sub())
+        method = del_sub()
     elif ctx.Content == "关注列表":
-        asyncio.run(sub_list())
+        method = sub_list()
+    else:
+        bilibili_handler.finish()
+        return
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(method)
     bilibili_handler.finish()
 
 
 def get_UID(keyword_len: int):
     try:
-        uid = re.findall(r"UID:(\d+)", ctx.Content)[0]
+        uid = re.findall(r"(\d+)", ctx.Content)[0]
     except Exception:
         uid = None
 
@@ -95,8 +100,8 @@ async def add_sub():
         at=False,
     )
     if result:
-        bilibili_handler.finish(f"已关注 {name}（{uid}）")
         await dy_sched_up(int(uid))
+        bilibili_handler.finish(f"已关注 {name}（{uid}）")
     bilibili_handler.finish(f"{name}（{uid}）已经关注过了")
 
 
