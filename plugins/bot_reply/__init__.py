@@ -129,10 +129,6 @@ def init_response():
                      reply['response_type'], reply['pic_url'])
     end_time = time.perf_counter()
 
-    # def k(obj: Reply):
-    #     return type_map[obj.__class__.__name__]
-    #
-    # response_list.sort(key=k)
     return end_time - start_time
 
 
@@ -153,6 +149,7 @@ def wait_get(name, st):
     if arg is None:
         arg = session.want(name, st, timeout=30)
     return arg
+
 
 @honey.handle
 def add_reply():
@@ -246,9 +243,6 @@ def add_reply():
 
 @plugin_receiver.wx
 def go_reply(ctx: WeChatMsg):
-    if ctx.Content[0] in ".。?？":
-        return
-
     if ctx.MsgType == MsgTypes.TextMsg:
         content = ctx.Content
     elif ctx.MsgType == MsgTypes.EmojiMsg:
