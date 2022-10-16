@@ -13,7 +13,7 @@ from grpc.aio import AioRpcError
 
 from EAbotoy import logger, WeChatMsg, Text, Action
 from EAbotoy.async_decorators import on_command
-from EAbotoy.schedule import async_scheduler, scheduler
+from EAbotoy.schedule import scheduler
 from utils.browser import get_dynamic_screenshot, get_browser, init_browser
 from .bot_bili_dynamic.database import DB as db
 from .bot_bili_dynamic.database import dynamic_offset as offset
@@ -82,6 +82,8 @@ async def dy_sched_up(uid: int):
     for dynamic in dynamics[::-1]:  # 动态从旧到新排列
         dynamic_id = int(dynamic.extend.dyn_id_str)
         if dynamic_id > offset[uid]:
+            if dynamic.card_type == DynamicType.av:
+                continue
             isSend = True
             logger.info(f"检测到新动态（{dynamic_id}）：{name}（{uid}）")
 
@@ -140,10 +142,6 @@ async def check_up_video(uid):
     sub_db = sub_DB()
     if sub_db.judge_up_updated(uid, video.created):
         for group in sub_db.get_gids_by_up_mid(uid):
-            send_img(
-                group,
-                imageUrl=video.pic,
-            )
             action.sendApp(group,
                            '<appmsg appid="wxcb8d4298c6a09bcb" sdkver="0">\n\t\t'
                            f'<title>{video.title}</title>\n\t\t'
@@ -154,6 +152,10 @@ async def check_up_video(uid):
                            '<showtype>0</showtype>\n\t\t'
                            f'<content />\n\t\t<url>https://m.bilibili.com/video/{video.bvid}</url>\n\t\t'
                            '</appmsg>')
+            send_img(
+                group,
+                imageUrl=video.pic,
+            )
 
 
 async def video_sched():
@@ -166,9 +168,10 @@ async def video_sched():
 
 
 def run_scheduler():
-    asyncio.run(dy_sched())
-    asyncio.run(video_sched())
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(dy_sched())
+    loop.run_until_complete(video_sched())
 
 
-scheduler.add_job(run_scheduler, "interval", minutes=3)
+scheduler.add_job(run_scheduler, "interval", minutes=1)
 asyncio.run(dy_sched())

@@ -1,7 +1,10 @@
+import traceback
 from typing import List, Optional
 
 import requests
 from pydantic import BaseModel  # pylint: disable=E0611
+
+from EAbotoy import logger
 
 
 # 番剧
@@ -59,8 +62,10 @@ class API:
             if result["code"] == 0:
                 vlist = result["data"]["list"]["vlist"]
                 return Video(**vlist[0])
-        except Exception as e:
-            print(e)
+        except IndexError:
+            pass
+        except Exception:
+            logger.warning(traceback.format_exc())
         return None
 
     @classmethod
