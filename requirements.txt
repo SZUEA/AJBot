@@ -9,3 +9,4 @@ py-dateutil
 bilireq
 pypika-tortoise
 tortoise-orm
+playwright
