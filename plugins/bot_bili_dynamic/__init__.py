@@ -33,6 +33,7 @@ def _():
         asyncio.run(del_sub())
     elif ctx.Content == "关注列表":
         asyncio.run(sub_list())
+    bilibili_handler.finish()
 
 
 def get_UID(keyword_len: int):

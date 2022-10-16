@@ -28,9 +28,7 @@ action = AsyncAction(os.environ["wxid"])
 async def receive_wx_msg(ctx: WeChatMsg, arg, command):
     isAdmin = ctx.ActionUserName == ctx.master or is_bot_master(ctx.CurrentWxid, ctx.ActionUserName)
     if isAdmin:
-        isSend = await dy_sched()
-        if isSend is not None and not isSend:
-            Text("没查到新动态~")
+        await dy_sched()
 
 
 def send_img(group, imageUrl):
