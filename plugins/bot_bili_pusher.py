@@ -68,7 +68,7 @@ async def dy_sched_up(uid: int):
     if uid not in offset:  # 已删除
         return
     elif offset[uid] == -1:  # 第一次爬取
-        logger.info(f"初始化{uid}的最新动态")
+        logger.info(f"初始化{name}的最新动态")
         if len(dynamics) == 1:  # 只有一条动态
             offset[uid] = int(dynamics[0].extend.dyn_id_str)
         else:  # 第一个可能是置顶动态，但置顶也可能是最新一条，所以取前两条的最大值
