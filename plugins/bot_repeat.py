@@ -5,7 +5,6 @@ from collections import defaultdict
 from queue import deque  # type:ignore
 from threading import Lock
 
-from EAbotoy import decorators as deco
 from EAbotoy.collection import MsgTypes
 from EAbotoy.model import WeChatMsg
 from EAbotoy.sugar import Picture, Text, Emoji
@@ -38,7 +37,6 @@ text_deque_dict = defaultdict(RepeatDeque)
 pic_deque_dict = defaultdict(RepeatDeque)
 
 
-@deco.ignore_botself
 def receive_wx_msg(ctx: WeChatMsg):
     if ctx.MsgType == MsgTypes.TextMsg:
         text = ctx.Content

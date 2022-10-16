@@ -5,7 +5,8 @@
 """
 
 from EAbotoy.collection import MsgTypes
-from EAbotoy.decorators import startswith, these_msgtypes
+from EAbotoy.contrib import plugin_receiver
+from EAbotoy.decorators import startswith, these_msgtypes, on_command
 from EAbotoy.model import WeChatMsg
 from EAbotoy import sugar, Text
 import random
@@ -123,20 +124,12 @@ def wd_check_game_win(session):
         return "还有 {} 次机会".format(session["total_guesses_allowed"] - len(guesses))
 
 
-@these_msgtypes(MsgTypes.TextMsg)
-@startswith(".wd")
-def receive_wx_msg(ctx: WeChatMsg):
+@plugin_receiver.wx
+@on_command(".wd")
+def guess_wordle(ctx: WeChatMsg, arg):
     wxid = ctx.FromUserName
 
-    if ctx.Content == ".wdstart":
-        session = wd_start_personal(wxid)
-        Text(
-            prompt_new_game(session) + "，使用 .wd [单词] 开始猜词",
-            True, ctx
-        )
-        return
-
-    guess_word = ctx.Content.split(' ')[-1].lower()
+    guess_word = arg.lower()
     if re.match('^[a-z]+$', guess_word) is None:
         Text("无效单词，必须为纯字母", True, ctx)
         return
@@ -170,3 +163,13 @@ def receive_wx_msg(ctx: WeChatMsg):
 
     if wd_gameover(session):
         wd_stopsession(wxid)
+
+
+@plugin_receiver.wx
+@on_command(".wdstart")
+def start_game(ctx: WeChatMsg, arg):
+    session = wd_start_personal(ctx.FromUserName)
+    Text(
+        prompt_new_game(session) + "，使用 .wd [单词] 开始猜词",
+        True, ctx
+    )

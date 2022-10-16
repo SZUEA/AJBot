@@ -100,7 +100,6 @@ def sysinfo():
     return full_meg
 
 
-@deco.ignore_botself
 @deco.equal_content("sysinfo")
 def receive_wx_msg(ctx: WeChatMsg):
     if not is_bot_master(ctx.CurrentWxid, ctx.ActionUserName):

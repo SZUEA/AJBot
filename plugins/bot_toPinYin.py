@@ -1,16 +1,16 @@
 """汉字转拼音：拼音{汉字}"""
 import requests
 
+from EAbotoy.async_decorators import on_command
 from EAbotoy.collection import MsgTypes
 from EAbotoy.decorators import startswith, these_msgtypes
 from EAbotoy.model import WeChatMsg
 from EAbotoy.sugar import Text
 
 
-@these_msgtypes(MsgTypes.TextMsg)
-@startswith("拼音")
-def receive_wx_msg(ctx: WeChatMsg):
-    word = ctx.Content[2:]
+@on_command("拼音")
+def receive_wx_msg(ctx: WeChatMsg, arg):
+    word = arg
     if word:
         resp = requests.get(
             "https://v2.alapi.cn/api/pinyin",
