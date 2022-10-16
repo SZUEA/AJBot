@@ -173,5 +173,5 @@ def run_scheduler():
     loop.run_until_complete(video_sched())
 
 
-scheduler.add_job(run_scheduler, "interval", minutes=1)
+scheduler.add_job(run_scheduler, "interval", minutes=2)
 asyncio.run(dy_sched())
