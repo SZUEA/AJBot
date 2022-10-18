@@ -7,24 +7,23 @@ from EAbotoy import logger
 from playwright.__main__ import main
 from playwright.async_api import Browser, async_playwright
 
-
-_browser: Optional[Browser] = None
+browser: Optional[Browser] = None
 
 
 async def init_browser(proxy=None, **kwargs) -> Browser:
     if proxy:
         kwargs["proxy"] = {"server": proxy}
-    global _browser
+    global browser
     p = await async_playwright().start()
-    _browser = await p.chromium.launch(**kwargs)
-    return _browser
+    browser = await p.chromium.launch(**kwargs)
+    return browser
 
 
 async def get_browser() -> Browser:
-    if _browser is None:
+    if browser is None:
         await init_browser()
-    assert _browser
-    return _browser
+    assert browser
+    return browser
 
 
 async def get_dynamic_screenshot(dynamic_id, style='mobile'):
@@ -38,8 +37,8 @@ async def get_dynamic_screenshot(dynamic_id, style='mobile'):
 async def get_dynamic_screenshot_mobile(dynamic_id):
     """移动端动态截图"""
     url = f"https://m.bilibili.com/dynamic/{dynamic_id}"
-    browser = await get_browser()
-    page = await browser.new_page(
+    _browser = await get_browser()
+    page = await _browser.new_page(
         device_scale_factor=2,
         user_agent=(
             "Mozilla/5.0 (Linux; Android 10; RMX1911) AppleWebKit/537.36 "
@@ -78,8 +77,8 @@ async def get_dynamic_screenshot_mobile(dynamic_id):
 async def get_dynamic_screenshot_pc(dynamic_id):
     """电脑端动态截图"""
     url = f"https://t.bilibili.com/{dynamic_id}"
-    browser = await get_browser()
-    context = await browser.new_context(
+    _browser = await get_browser()
+    context = await _browser.new_context(
         viewport={"width": 2560, "height": 1080},
         device_scale_factor=2,
     )
@@ -161,5 +160,3 @@ async def check_playwright_env():
             "加载失败，Playwright 依赖不全，"
             "解决方法：https://haruka-bot.sk415.icu/faq.html#playwright-依赖不全"
         )
-
-
