@@ -106,12 +106,20 @@ async def dy_sched_up(uid: int):
                 action.sendApp(sets.type_id,
                                '<appmsg appid="wxcb8d4298c6a09bcb" sdkver="0">\n\t\t'
                                f'<title>{text}</title>\n\t\t'
-                               f'<des>up: {name}</des>'
-                               '\n\t\t<username />\n\t\t'
-                               '<action>view</action>\n\t\t'
-                               '<type>5</type>\n\t\t'
+                               f'<des>UP主：{name}</des>'
+                               '<username />\n\t\t<action>view</action>\n\t\t<type>5</type>\n\t\t'
                                '<showtype>0</showtype>\n\t\t'
                                f'<content />\n\t\t<url>https://t.bilibili.com/{dynamic_id}</url>\n\t\t'
+                               '<appattach>\n\t\t\t<attachid />\n\t\t\t'
+                               '<cdnthumburl>3057020100044b3049020100020421423bf002032f80290204e6'
+                               '833cb70204634e9da7042435623233323837362d663830352d346233352d626438'
+                               '612d643661343239343363666433020401290a020201000405004c53d900</cdnthumburl>\n\t\t\t'
+                               '<cdnthumbmd5>5d538bd737e8e6c09323c560b386360c</cdnthumbmd5>\n\t\t\t'
+                               '<cdnthumblength>5492</cdnthumblength>\n\t\t\t'
+                               '<cdnthumbheight>117</cdnthumbheight>\n\t\t\t<cdnthumbwidth>120</cdnthumbwidth>\n\t\t\t'
+                               '<cdnthumbaeskey>9093651ad791aabe0c1852a3678a2e3e</cdnthumbaeskey>\n\t\t\t'
+                               '<aeskey>9093651ad791aabe0c1852a3678a2e3e</aeskey>\n\t\t\t<encryver>1</encryver>'
+                               '\n\t\t\t<fileext />\n\t\t\t<islargefilemsg>0</islargefilemsg>\n\t\t</appattach>\n\t\t'
                                '</appmsg>'
                                )
 
@@ -145,12 +153,20 @@ async def check_up_video(uid):
                            '<appmsg appid="wxcb8d4298c6a09bcb" sdkver="0">\n\t\t'
                            f'<title>{video.title}</title>\n\t\t'
                            f'<des>UP主：{video.author}\n{video.description}</des>'
-                           '\n\t\t<username />\n\t\t'
-                           '<action>view</action>\n\t\t'
-                           '<type>4</type>\n\t\t'
-                           '<showtype>0</showtype>\n\t\t'
-                           f'<content />\n\t\t<url>https://m.bilibili.com/video/{video.bvid}</url>\n\t\t'
-                           '</appmsg>')
+                           '<username />\n\t\t<action>view</action>\n\t\t<type>4</type>\n\t\t<showtype>0</showtype>\n\t\t'
+                           '<content />\n\t\t<url>https://m.bilibili.com/video/{video.bvid}</url>\n\t\t'
+                           '<appattach>\n\t\t\t<attachid />\n\t\t\t'
+                           '<cdnthumburl>3057020100044b3049020100020421423bf002032f80290204e6'
+                           '833cb70204634e9da7042435623233323837362d663830352d346233352d626438'
+                           '612d643661343239343363666433020401290a020201000405004c53d900</cdnthumburl>\n\t\t\t'
+                           '<cdnthumbmd5>5d538bd737e8e6c09323c560b386360c</cdnthumbmd5>\n\t\t\t'
+                           '<cdnthumblength>5492</cdnthumblength>\n\t\t\t'
+                           '<cdnthumbheight>117</cdnthumbheight>\n\t\t\t<cdnthumbwidth>120</cdnthumbwidth>\n\t\t\t'
+                           '<cdnthumbaeskey>9093651ad791aabe0c1852a3678a2e3e</cdnthumbaeskey>\n\t\t\t'
+                           '<aeskey>9093651ad791aabe0c1852a3678a2e3e</aeskey>\n\t\t\t<encryver>1</encryver>'
+                           '\n\t\t\t<fileext />\n\t\t\t<islargefilemsg>0</islargefilemsg>\n\t\t</appattach>\n\t\t'
+                           '</appmsg>'
+                           )
             send_img(
                 group,
                 imageUrl=video.pic,
