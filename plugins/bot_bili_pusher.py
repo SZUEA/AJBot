@@ -191,6 +191,6 @@ def run_scheduler():
     logger.info("执行定时任务完毕")
 
 
-scheduler.add_job(run_scheduler, "interval", minutes=0, seconds=5)
+scheduler.add_job(run_scheduler, "interval", minutes=2, seconds=30)
 asyncio.run(init_browser())
 run_scheduler()
