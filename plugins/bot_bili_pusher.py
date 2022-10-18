@@ -6,6 +6,7 @@ import os
 import traceback
 from io import BytesIO
 from queue import deque  # type:ignore
+from threading import Thread
 
 import requests
 from grpc import StatusCode
@@ -129,7 +130,6 @@ async def dy_sched():
     uids = await db.get_uid_list("dynamic")
     if not uids:
         return
-    await init_browser()
     for uid in uids:
         await dy_sched_up(uid)
 
@@ -171,7 +171,10 @@ def run_scheduler():
     loop = asyncio.new_event_loop()
     loop.run_until_complete(dy_sched())
     loop.run_until_complete(video_sched())
+    loop.close()
+    logger.info("执行定时任务完毕")
 
 
-scheduler.add_job(run_scheduler, "interval", minutes=2, seconds=30)
+scheduler.add_job(run_scheduler, "interval", minutes=0, seconds=5)
+asyncio.run(init_browser())
 run_scheduler()
