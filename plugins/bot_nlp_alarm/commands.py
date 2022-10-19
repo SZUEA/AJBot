@@ -56,8 +56,9 @@ def alarm(time: datetime, target: str, ctx: WeChatMsg):
         return
 
     if on_planed.get(ctx.ActionUserName, 0) > 0:
-        Text("哎哟，我的记性还不太好，一个人只能记住一次提醒，等之后再来吧")
-        return
+        if ctx.master != ctx.FromUserName:
+            Text("哎哟，我的记性还不太好，一个人只能记住一次提醒，等之后再来吧")
+            return
     on_planed[ctx.ActionUserName] = on_planed.get(ctx.ActionUserName, 0) + 1
     # 添加job
     time_str = time.strftime("%Y-%m-%d %H:%M:%S")
