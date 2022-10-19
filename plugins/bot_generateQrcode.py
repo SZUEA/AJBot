@@ -2,7 +2,7 @@
 import base64
 import io
 
-from EAbotoy.decorators import ignore_botself, startswith, these_msgtypes
+from EAbotoy.decorators import startswith, these_msgtypes, on_command
 from EAbotoy.model import WeChatMsg
 from EAbotoy.sugar import Picture
 
@@ -19,9 +19,7 @@ def gen_qrcode(text: str) -> str:
     return base64.b64encode(img_buffer.getvalue()).decode()
 
 
-@ignore_botself
-@startswith("测码")
-def receive_wx_msg(ctx: WeChatMsg):
-    content = ctx.Content[2:]
-    if content != '':
-        Picture(pic_base64=gen_qrcode(content))
+@on_command("测码")
+def receive_wx_msg(ctx: WeChatMsg, arg, command):
+    if arg != '':
+        Picture(pic_base64=gen_qrcode(arg))

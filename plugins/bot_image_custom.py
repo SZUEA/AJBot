@@ -5,7 +5,6 @@ from enum import Enum
 
 from EAbotoy import Action
 from EAbotoy.collection import MsgTypes
-from EAbotoy.decorators import ignore_botself
 from PIL import Image, ImageDraw, ImageFont
 
 from EAbotoy.model import WeChatMsg
@@ -39,7 +38,6 @@ if qrListOpen:
 bot = Action(os.getenv("wxid"))
 
 
-@ignore_botself
 def receive_wx_msg(ctx: WeChatMsg):
     if Tools.commandMatch(ctx.FromUserName, blockGroupNumber):
         return

@@ -1,0 +1,17 @@
+{
+    "ordinary": {
+        "1": {
+            "userid": "wxid_bd19afsjoeno22",
+            "fiveStar": {
+                "getCount": 0,
+                "notGetCorrespondingCount": 2,
+                "certainUp": false
+            },
+            "fourStar": {
+                "getCount": 0,
+                "notGetCorrespondingCount": 1,
+                "certainUp": false
+            }
+        }
+    }
+}

@@ -3,7 +3,6 @@
 import os
 from EAbotoy import Action, MsgTypes, sugar
 from EAbotoy.contrib import plugin_receiver
-from EAbotoy.decorators import ignore_botself
 from EAbotoy.model import WeChatMsg
 from .db import DB
 from plugins.bot_reply import is_bot_master
@@ -12,7 +11,6 @@ action = Action()
 
 
 @plugin_receiver.wx
-@ignore_botself
 def query_real_name(ctx: WeChatMsg):
     if ctx.MsgType != MsgTypes.TextMsg:
         return
@@ -21,7 +19,7 @@ def query_real_name(ctx: WeChatMsg):
         return
 
     if "是谁" in ctx.Content:
-        real_name = DB().get_real_name(ctx.atUserIds[0]);
+        real_name = DB().get_real_name(ctx.atUserIds[0])
         if len(real_name) == 0:
             action.sendWxText(toUserName=ctx.FromUserName,
                               content=f'''{ctx.atUserNames[0]}未实名''',
@@ -33,7 +31,6 @@ def query_real_name(ctx: WeChatMsg):
 
 
 @plugin_receiver.wx
-@ignore_botself
 def add_real_name(ctx: WeChatMsg):
     if not ctx.isAtMsg:
         return

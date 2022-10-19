@@ -88,7 +88,6 @@ class Action:
             host: Optional[str] = None,
             timeout: int = 20,
             is_use_queue: bool = True,
-            queue_delay: Union[int, float] = 1.4,
 
     ):
         self.host = utils.check_schema(host or jconfig.host)
@@ -110,9 +109,7 @@ class Action:
         # self._send_thread.setDaemon(True)
 
     @property
-    def wxid(self) -> int:
-        if self._wxid == 0:
-            self._wxid = self.getAllBots()[0]
+    def wxid(self) -> str:
         return self._wxid
 
     @classmethod
@@ -154,6 +151,7 @@ class Action:
             imageUrl: str = "",
             imageBase64: str = "",
             imagePath: str = "",
+            text: str = ""
     ):
         """发送图片消息"""
         assert any([imageUrl, imageBase64, imagePath]), "缺少参数"
@@ -167,11 +165,16 @@ class Action:
             arg['ImageBase64'] = imageBase64
         elif imagePath != "":
             arg['ImagePath'] = imagePath
-
-        return self._post(
+        if text != '':
+            return self._post(
+                "SendImage",
+                arg,
+            )
+        self._post(
             "SendImage",
             arg,
         )
+        return self.sendWxText(toUserName, text)
 
     def sendCdnImg(
             self,
@@ -208,6 +211,24 @@ class Action:
 
         return self._post(
             "SendEmoji",
+            arg,
+        )
+
+    def sendApp(
+            self,
+            toUserName: str,
+            content: str,
+    ):
+        """发送好友图片消息"""
+
+        arg = {
+            "ToUserName": toUserName,
+            "Content": content,
+            "MsgType": 49
+        }
+
+        return self._post(
+            "SendAppMsg",
             arg,
         )
 

@@ -11,20 +11,20 @@ from . import macro
 from .action import Action
 from .async_action import AsyncAction
 from .collection import MsgTypes
-from .model import WeChatMsg, WeChatMsg
+from .model import WeChatMsg, WeChatMsg, EventMsg
 from .utils import file_to_base64
 
 
-def find_ctx(back_stack: int = 1) -> Union[WeChatMsg, WeChatMsg]:
+def find_ctx(back_stack: int = 1) -> Union[WeChatMsg, EventMsg]:
     back = inspect.currentframe().f_back  # type: ignore
     for _ in range(back_stack):
         back = back.f_back  # type: ignore
     locals = back.f_locals  # type: ignore
 
     ctx = locals.get("ctx")
-    if not isinstance(ctx, (WeChatMsg, WeChatMsg)):
+    if not isinstance(ctx, (WeChatMsg, EventMsg)):
         for v in locals.values():
-            if isinstance(v, (WeChatMsg, WeChatMsg)):
+            if isinstance(v, (WeChatMsg, EventMsg)):
                 ctx = v
                 break
 
@@ -155,7 +155,20 @@ class _S:
 
         if isinstance(ctx, WeChatMsg):
             return action.sendCdnImg(
-                ctx.FromGroupId, xml
+                ctx.FromUserName, xml
+            )
+        return None
+
+    def emoji(self, md5: str):
+        """表情包
+        :param md5: md5
+        """
+        ctx = self.ctx
+        action = Action.from_ctx(ctx)
+
+        if isinstance(ctx, WeChatMsg):
+            return action.sendEmoji(
+                ctx.FromUserName, EmojiMd5=md5
             )
         return None
 
@@ -178,16 +191,14 @@ class _S:
                 TYPE_PATH,
         ):
             type, data = _resolve_data_type(data)
-        if isinstance(ctx, WeChatMsg):
-            if type == TYPE_URL:
-                return action.sendImg(ctx.FromUserName, imageUrl=data)  # type: ignore
-            elif type == TYPE_BASE64:
-                return action.sendImg(ctx.FromUserName, imageBase64=data)  # type: ignore
-            elif type == TYPE_PATH:
-                return action.sendImg(
-                    ctx.FromGroupId, imagePath=file_to_base64(data)
-                )
-
+        if type == TYPE_URL:
+            return action.sendImg(ctx.FromUserName, imageUrl=data)  # type: ignore
+        elif type == TYPE_BASE64:
+            return action.sendImg(ctx.FromUserName, imageBase64=data)  # type: ignore
+        elif type == TYPE_PATH:
+            return action.sendImg(
+                ctx.FromGroupId, imagePath=file_to_base64(data)
+            )
         return None
 
     # def voice(self, data: _T_Data, type: int = 0):
@@ -241,26 +252,26 @@ class _S:
     #                 return action.sendFriendVoice(ctx.FromUin, voiceBase64Buf=file_to_base64(data))  # type: ignore
     #
     #     return None
-
-    async def atext(self, text: str, at: bool = False):
-        """发送文字
-        :param text: 发送的文字内容
-        :param at: 是否要艾特该用户
-        """
-        ctx = self.ctx
-        async with AsyncAction.from_ctx(ctx) as action:
-            if isinstance(ctx):
-                return await action.sendGroupText(
-                    ctx.FromGroupId, text, atUser=ctx.FromUserId if at else 0
-                )
-            elif isinstance(ctx):
-                if ctx.TempUin:
-                    return await action.sendPrivateText(ctx.FromUin, ctx.TempUin, text)
-                elif ctx.MsgType == MsgTypes.PhoneMsg:
-                    return await action.sendPhoneText(text)
-                else:
-                    return await action.sendFriendText(ctx.FromUin, text)
-
+    #
+    # async def atext(self, text: str, at: bool = False):
+    #     """发送文字
+    #     :param text: 发送的文字内容
+    #     :param at: 是否要艾特该用户
+    #     """
+    #     ctx = self.ctx
+    #     async with AsyncAction.from_ctx(ctx) as action:
+    #         if isinstance(ctx):
+    #             return await action.sendGroupText(
+    #                 ctx.FromGroupId, text, atUser=ctx.FromUserId if at else 0
+    #             )
+    #         elif isinstance(ctx):
+    #             if ctx.TempUin:
+    #                 return await action.sendPrivateText(ctx.FromUin, ctx.TempUin, text)
+    #             elif ctx.MsgType == MsgTypes.PhoneMsg:
+    #                 return await action.sendPhoneText(text)
+    #             else:
+    #                 return await action.sendFriendText(ctx.FromUin, text)
+    #
     # async def aimage(
     #         self, data: _T_Data, text: str = "", at: bool = False, type: int = 0
     # ):
@@ -407,8 +418,16 @@ def CDNPic(xml: str):
     return S.bind(find_ctx()).cdn_pic(xml)
 
 
-def Picture(pic_url="", pic_base64="", pic_path="", pic_md5="", text=""):
+def Emoji(md5: str):
+    """发送文字
+    :param xml: xml
+    """
+    return S.bind(find_ctx()).emoji(md5)
+
+
+def Picture(pic_url="", pic_base64="", pic_path="", pic_md5="", text="", ctx=None):
     """发送图片 经支持群消息和好友消息接收函数内调用
+    :param ctx:
     :param pic_url: 图片链接
     :param pic_base64: 图片base64编码
     :param pic_path: 图片文件路径
@@ -419,7 +438,10 @@ def Picture(pic_url="", pic_base64="", pic_path="", pic_md5="", text=""):
     """
     assert any([pic_url, pic_base64, pic_path, pic_md5]), "必须给定一项"
 
-    image = S.bind(find_ctx()).image
+    if ctx is None:
+        ctx = find_ctx()
+
+    image = S.bind(ctx).image
     if pic_url:
         return image(pic_url, type=S.TYPE_URL)
     elif pic_base64:

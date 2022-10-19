@@ -19,6 +19,7 @@ from .sugar import Picture as Picture
 from .sugar import S as S
 from .sugar import Text as Text
 from .sugar import Voice as Voice
+from .model import WeChatMsg, EventMsg
 
 check_version()
 del check_version

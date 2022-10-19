@@ -5,7 +5,8 @@
 """
 
 from EAbotoy.collection import MsgTypes
-from EAbotoy.decorators import ignore_botself, startswith, these_msgtypes
+from EAbotoy.contrib import plugin_receiver
+from EAbotoy.decorators import startswith, these_msgtypes, on_command
 from EAbotoy.model import WeChatMsg
 from EAbotoy import sugar, Text
 import random
@@ -16,14 +17,17 @@ def load_wordlist(filename):
     wordlist_file = open(filename, encoding='utf-8')
     wordlist_lines = wordlist_file.readlines()
     wordlist_file.close()
-    return list(filter(lambda l: len(l) == 5 and l[0] != "#", [line.strip().lower() for line in wordlist_lines]))
+    lst = list(map(lambda l: l.split(" ", 1), filter(lambda l: len(l) >= 1 and l[0][0] != "#",
+                                                     [line.strip().lower() for line in
+                                                      wordlist_lines])))  # split into [word,translation]s
+    return {x[0]: (x[1] if len(x) > 1 else "") for x in lst}
 
 
 WORDLE_WORD_LIST = "./resources/wordle_words.txt"  # 所有可作为输入接受的单词列表
 WORDLE_ANSWER_LIST = "./resources/wordle_answers.txt"  # 所有可能生成的答案单词，必须是 wordle_word 的子集
 
 wordlist = load_wordlist(WORDLE_WORD_LIST)
-answerlist = load_wordlist(WORDLE_ANSWER_LIST)
+answerlist = list(load_wordlist(WORDLE_ANSWER_LIST).keys())
 
 
 def wordlecore_match(correct_word, guess):
@@ -82,6 +86,13 @@ def prompt_new_game(session):
                                                                         session["total_guesses_allowed"])
 
 
+def prompt_word_trans(format, word):
+    wordtrans = wordlist.get(word.lower())
+    if wordtrans is not None:
+        return format.format(wordtrans.strip())
+    return ""
+
+
 def prompt_guess_history(session):
     res = []
     guesses = session["previous_guesses"]
@@ -89,7 +100,8 @@ def prompt_guess_history(session):
     for word in guesses:
         result = wordlecore_match(correct_word, word)
         res.append("   ".join(list(word.upper())) + "\n" +
-                   ' '.join(list(result.replace('_', '⬜').replace('O', '🟩').replace('?', '🟨'))))
+                   ' '.join(list(result.replace('_', '⬜').replace('O', '🟩').replace('?', '🟨')))
+                   + prompt_word_trans("  {}", word))
 
     return '\n'.join(res)
 
@@ -100,30 +112,24 @@ def wd_check_game_win(session):
     if guesses[-1] == correct_word:
         session["win"] = True
         if len(guesses) == 1:
-            return "恭喜你（逆天地）在第 1 发就猜中了正确单词 {}！".format(correct_word.upper())
+            return "恭喜你（逆天地）在第 1 发就猜中了正确单词 {}！{}".format(correct_word.upper(),
+                                                                          prompt_word_trans("单词释义：{}",
+                                                                                            correct_word))
         else:
-            return "恭喜你在第 {} 发猜中正确单词 {}！".format(len(guesses), correct_word.upper())
+            return "恭喜你在第 {} 发猜中正确单词 {}！{}".format(len(guesses), correct_word.upper(),
+                                                               prompt_word_trans("单词释义：{}", correct_word))
     elif wd_gameover(session):
-        return "游戏结束，正确单词为 " + correct_word
+        return "游戏结束，正确单词为 " + correct_word + prompt_word_trans("（{}）", correct_word)
     else:
         return "还有 {} 次机会".format(session["total_guesses_allowed"] - len(guesses))
 
 
-@ignore_botself
-@these_msgtypes(MsgTypes.TextMsg)
-@startswith(".wd")
-def receive_wx_msg(ctx: WeChatMsg):
-    wxid = ctx.CurrentWxid
+@plugin_receiver.wx
+@on_command(".wd")
+def guess_wordle(ctx: WeChatMsg, arg, command):
+    wxid = ctx.FromUserName
 
-    if ctx.Content == ".wdstart":
-        session = wd_start_personal(wxid)
-        Text(
-            prompt_new_game(session) + "，使用 .wd [单词] 开始猜词",
-            True, ctx
-        )
-        return
-
-    guess_word = ctx.Content.split(' ')[-1].lower()
+    guess_word = arg.lower()
     if re.match('^[a-z]+$', guess_word) is None:
         Text("无效单词，必须为纯字母", True, ctx)
         return
@@ -140,7 +146,9 @@ def receive_wx_msg(ctx: WeChatMsg):
         return
 
     try:
-        wordlist.index(guess_word)
+        if wordlist.get(guess_word) is None:
+            Text("无效单词，'{}' 不在单词表中".format(guess_word), True, ctx)
+            return
     except ValueError:
         Text("无效单词，'{}' 不在单词表中".format(guess_word), True, ctx)
         return
@@ -155,3 +163,13 @@ def receive_wx_msg(ctx: WeChatMsg):
 
     if wd_gameover(session):
         wd_stopsession(wxid)
+
+
+@plugin_receiver.wx
+@on_command(".wdstart")
+def start_game(ctx: WeChatMsg, arg, command):
+    session = wd_start_personal(ctx.FromUserName)
+    Text(
+        prompt_new_game(session) + "，使用 .wd [单词] 开始猜词",
+        True, ctx
+    )
