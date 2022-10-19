@@ -24,7 +24,7 @@ from .nlp_time.TimeNormalizer import TimeNormalizer
 tn = TimeNormalizer()
 
 
-@re_findall(r"(?:提醒)|(?:通知)|(?:叫)")
+@re_findall(r"(?:提醒我)|(?:通知我)|(?:叫我)")
 @these_msgtypes(MsgTypes.TextMsg)
 def receive_wx_msg(ctx: WeChatMsg):
     stripped_arg = ctx.Content.strip()
@@ -35,7 +35,8 @@ def receive_wx_msg(ctx: WeChatMsg):
     # 解析时间
     try:
         time_json = json.loads(tn.parse(target=time))
-    except TypeError:
+    except Exception:
+        Text("哎哟，没看懂，说点人话吧")
         return
     target = target.lstrip("我") or "干事情"
     if "error" in time_json.keys() or not target:
