@@ -4,13 +4,11 @@
 import requests
 from EAbotoy import Action, sugar
 from EAbotoy.contrib import plugin_receiver
-from EAbotoy.decorators import ignore_botself
 from EAbotoy.model import WeChatMsg
 from plugins.bot_reply import is_bot_master
 
 action = Action()
 
-@ignore_botself
 @plugin_receiver.wx
 def check_join_code(ctx: WeChatMsg):
     if ctx.Content[0] not in ".。?？":
@@ -47,7 +45,7 @@ def check_join_code(ctx: WeChatMsg):
 
             resp = requests.get(
                 "https://0e7.cn",
-                params={"d":url, 'token': '9p4THrA975JVPjyAcjLp8tDDFhPzXFm7'}
+                params={"d": url, 'token': '9p4THrA975JVPjyAcjLp8tDDFhPzXFm7'}
             )
         else:
             url = content[6:]
