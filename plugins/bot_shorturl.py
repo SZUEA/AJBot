@@ -1,4 +1,4 @@
-"""短网址
+"""短网址0e7.cn
 """
 
 import requests
