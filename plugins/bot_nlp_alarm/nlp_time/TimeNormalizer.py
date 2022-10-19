@@ -54,10 +54,14 @@ class TimeNormalizer:
         input_query = input_query.replace('五一', '劳动节')
         input_query = input_query.replace('白天', '早上')
         input_query = input_query.replace('：', ':')
-        input_query = input_query.replace('min', '分钟')
-        input_query = input_query.replace('hour', '小时')
-        input_query = input_query.replace('sec', '秒')
+        input_query = input_query.replace('min后', '分钟')
+        input_query = input_query.replace('hour后', '小时')
+        input_query = input_query.replace('sec后', '秒')
         input_query = input_query.replace('s后', '秒后')
+        input_query = input_query.replace('h后', '小时后')
+        input_query = input_query.replace('d后', '天后')
+        input_query = input_query.replace('m后', '分钟后')
+        input_query = input_query.replace('day后', '天后')
         return input_query
 
     def init(self):
