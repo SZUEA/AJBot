@@ -36,11 +36,11 @@ def receive_wx_msg(ctx: WeChatMsg):
     try:
         time_json = json.loads(tn.parse(target=time))
     except Exception:
-        Text("哎哟，没看懂，说点人话吧")
+        # Text("哎哟，没看懂，说点人话吧")
         return
     target = target.lstrip("我") or "干事情"
     if "error" in time_json.keys() or not target:
-        Text("哎哟，没看懂，说点人话吧")
+        # Text("哎哟，没看懂，说点人话吧")
         return
     # 时间差转换为时间点
     elif time_json['type'] == "timedelta":
