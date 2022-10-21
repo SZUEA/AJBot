@@ -38,7 +38,7 @@ def receive_wx_msg(ctx: WeChatMsg):
     except Exception:
         # Text("哎哟，没看懂，说点人话吧")
         return
-    target = stripped_arg.lstrip("我") or "干事情"
+    target = stripped_arg[stripped_arg.index("我") + 1:] or "干事情"
     if "error" in time_json.keys() or not target:
         # Text("哎哟，没看懂，说点人话吧")
         return

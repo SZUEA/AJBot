@@ -23,6 +23,8 @@ def receive_wx_msg(ctx: WeChatMsg):  # 函数名字只能是这个才能触发
         return
 
     arg = re.findall(r"^轰炸(.+?)\s*(\d*)$", ctx.Content)[0]
+    if arg[0] == '':
+        return
     time = int(arg[1] or 3)
     if time > 10:
         time = 3
