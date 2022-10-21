@@ -30,15 +30,15 @@ def receive_wx_msg(ctx: WeChatMsg):
     stripped_arg = ctx.Content.strip()
 
     # 将消息分为两部分（时间|事件）
-    time, target = re.split(r"(?:提醒)|(?:通知)|(?:叫)", stripped_arg, maxsplit=1)
+    # time, target = re.split(r"(?:提醒)|(?:通知)|(?:叫)", stripped_arg, maxsplit=1)
 
     # 解析时间
     try:
-        time_json = json.loads(tn.parse(target=time))
+        time_json = json.loads(tn.parse(target=stripped_arg))
     except Exception:
         # Text("哎哟，没看懂，说点人话吧")
         return
-    target = target.lstrip("我") or "干事情"
+    target = stripped_arg.lstrip("我") or "干事情"
     if "error" in time_json.keys() or not target:
         # Text("哎哟，没看懂，说点人话吧")
         return
@@ -54,7 +54,7 @@ def receive_wx_msg(ctx: WeChatMsg):
         time_target = datetime.strptime(time_json['timestamp'],
                                         "%Y-%m-%d %H:%M:%S")
         # 默认时间点为中午12点
-        if not re.search(r"[\d+一二两三四五六七八九十]+点", time) \
+        if not re.search(r"[\d+一二两三四五六七八九十]+点", stripped_arg) \
                 and time_target.hour == 0 and time_target.minute == 0 and time_target.second == 0:
             time_target += timedelta(hours=12)
     else:

@@ -46,7 +46,7 @@ class TimeNormalizer:
         pattern = re.compile(rule)
         match = pattern.search(input_query)
         if match == None:
-            input_query = input_query.replace('个', '')
+            input_query = input_query.replace('个半小时', '小时30分钟')
 
         input_query = input_query.replace('中旬', '15号')
         input_query = input_query.replace('傍晚', '午后')
@@ -57,11 +57,15 @@ class TimeNormalizer:
         input_query = input_query.replace('min后', '分钟')
         input_query = input_query.replace('hour后', '小时')
         input_query = input_query.replace('sec后', '秒')
+        input_query = input_query.replace('day后', '天后')
         input_query = input_query.replace('s后', '秒后')
         input_query = input_query.replace('h后', '小时后')
         input_query = input_query.replace('d后', '天后')
         input_query = input_query.replace('m后', '分钟后')
-        input_query = input_query.replace('day后', '天后')
+        input_query = input_query.replace('点半', '点30')
+        input_query = input_query.replace('半个小时', '30分钟')
+        input_query = input_query.replace('半小时', '30分钟')
+
         return input_query
 
     def init(self):
