@@ -133,14 +133,24 @@ class Action:
             content = "@所有人 " + content
             atUser = "notify@all"
 
+        arg = {
+            "ToUserName": toUserName,
+            "MsgType": 1,
+            "Content": content,
+            "AtUsers": atUser if isinstance(atUser, str) else ','.join(atUser)
+        }
+
+        if atUser != "" and len(atUser) != 0:
+            arg['AtUsers'] = atUser if isinstance(atUser, str) else ','.join(atUser)
+            content = arg['Content']
+            atUserCount = 1 if isinstance(atUser, str) else len(atUser)
+            for i in range(atUserCount - content.count('@')):
+                content += f" @用户{i + 1} "
+            arg['Content'] = content
+
         return self._post(
             "SendMsg",
-            {
-                "ToUserName": toUserName,
-                "MsgType": 1,
-                "Content": content,
-                "AtUsers": atUser
-            },
+            arg,
         )
 
     # 发送图片
