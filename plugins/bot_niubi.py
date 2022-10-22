@@ -231,7 +231,3 @@ def receive_wx_msg(ctx: WeChatMsg):
                           content=get_niubi(ctx.atUserNames[0]),
                           atUser=ctx.atUserIds[0])
         
-    if "cb" in ctx.Content and ctx.isAtMsg:
-        action.sendWxText(toUserName=ctx.FromUserName,
-                          content=get_niubi(ctx.atUserNames[0]),
-                          atUser=ctx.atUserIds[0])

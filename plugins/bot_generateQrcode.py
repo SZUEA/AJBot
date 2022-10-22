@@ -19,7 +19,7 @@ def gen_qrcode(text: str) -> str:
     return base64.b64encode(img_buffer.getvalue()).decode()
 
 
-@on_command("测码")
+@on_command(["测码", "生成二维码"])
 def receive_wx_msg(ctx: WeChatMsg, arg, command):
     if arg != '':
         Picture(pic_base64=gen_qrcode(arg))

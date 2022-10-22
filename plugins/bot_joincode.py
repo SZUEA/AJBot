@@ -85,6 +85,7 @@ join_list = {
 
 @plugin_receiver.wx
 def check_join_code(ctx: WeChatMsg):
+    return
     if ctx.IsGroup or len(ctx.Content) != 8:
         return
 

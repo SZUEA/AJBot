@@ -9,6 +9,7 @@ from plugins.bot_reply import is_bot_master
 
 action = Action()
 
+
 @plugin_receiver.wx
 def check_join_code(ctx: WeChatMsg):
     if ctx.Content[0] not in ".。?？":
