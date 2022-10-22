@@ -144,8 +144,8 @@ class Action:
             arg['AtUsers'] = atUser if isinstance(atUser, str) else ','.join(atUser)
             content = arg['Content']
             atUserCount = 1 if isinstance(atUser, str) else len(atUser)
-            for i in range(atUserCount - content.count('@')):
-                content += f" @用户{i + 1} "
+            if '@' not in content:
+                content += "\n" + ("@" * (atUserCount - content.count('@')))
             arg['Content'] = content
 
         return self._post(
