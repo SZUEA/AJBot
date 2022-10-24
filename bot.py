@@ -84,7 +84,7 @@ def event_log(ctx: EventMsg):
 @decorators.these_msgtypes(MsgTypes.TextMsg)
 def daily_message(ctx: WeChatMsg):
     if ctx.Content == '每日新闻':
-        daily()
+        daily(ctx.FromUserName)
 
 
 def notice(switch):
@@ -100,11 +100,11 @@ def notice(switch):
         )
 
 
-def daily():
+def daily(group: str = '18728854191@chatroom'):
     res = requests.get("https://api.03c3.cn/zb/")
     base = str(base64.b64encode(res.content), encoding="utf-8")
 
-    action.sendImg(toUserName="18728854191@chatroom",
+    action.sendImg(toUserName=group,
                    imageBase64=base)
 
 
