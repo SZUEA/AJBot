@@ -1,5 +1,7 @@
-import json
+import base64
 import os
+
+import requests
 
 from EAbotoy import Botoy, jconfig, Action, sugar, MsgTypes
 from EAbotoy.model import WeChatMsg, EventMsg
@@ -51,7 +53,6 @@ def plugin_manage(ctx: WeChatMsg):
         sugar.Text("~~所有插件刷新完毕")
 
 
-
 @bot.on_wx_msg
 @decorators.these_msgtypes(MsgTypes.TextMsg)
 @decorators.on_regexp(r'^[.。]')
@@ -79,6 +80,13 @@ def event_log(ctx: EventMsg):
     pass
 
 
+@bot.on_wx_msg
+@decorators.these_msgtypes(MsgTypes.TextMsg)
+def daily_message(ctx: WeChatMsg):
+    if ctx.Content == '每日新闻':
+        daily()
+
+
 def notice(switch):
     if switch == 1:
         action.sendWxText(
@@ -92,8 +100,17 @@ def notice(switch):
         )
 
 
+def daily():
+    res = requests.get("https://api.03c3.cn/zb/")
+    base = str(base64.b64encode(res.content), encoding="utf-8")
+
+    action.sendImg(toUserName="18728854191@chatroom",
+                   imageBase64=base)
+
+
 scheduler.add_job(notice, "cron", hour=0, minute=59, args=(1,))
 scheduler.add_job(notice, "cron", hour=7, minute=20, args=(0,))
+scheduler.add_job(daily, "cron", hour=8, minute=00)
 
 if __name__ == "__main__":
     bot.run()
