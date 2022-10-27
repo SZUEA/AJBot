@@ -156,7 +156,7 @@ async def check_up_video(uid):
                            f'<title>{video.title}</title>\n\t\t'
                            f'<des>UP主：{video.author}\n{video.description}</des>'
                            '<username />\n\t\t<action>view</action>\n\t\t<type>4</type>\n\t\t<showtype>0</showtype>\n\t\t'
-                           '<content />\n\t\t<url>https://m.bilibili.com/video/{video.bvid}</url>\n\t\t'
+                           f'<content />\n\t\t<url>https://m.bilibili.com/video/{video.bvid}</url>\n\t\t'
                            '<appattach>\n\t\t\t<attachid />\n\t\t\t'
                            '<cdnthumburl>3057020100044b3049020100020421423bf002032f80290204e6'
                            '833cb70204634e9da7042435623233323837362d663830352d346233352d626438'
