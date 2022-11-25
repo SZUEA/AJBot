@@ -17,7 +17,7 @@ from ..bot_bili_pusher import dy_sched_up
 
 bilibili_handler = SessionHandler().receive_wx_msg()
 
-white_groups = ['18728854191@chatroom', '18803656716@chatroom']
+white_groups = ['18728854191@chatroom', '18803656716@chatroom','17496459997@chatroom']
 
 
 @bilibili_handler.handle
