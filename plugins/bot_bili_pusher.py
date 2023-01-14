@@ -42,9 +42,6 @@ def send_img(group, imageUrl):
     action.sendImg(group, imageBase64=base)
 
 
-last_dy = ""
-
-
 async def dy_sched_up(uid: int):
     user = await db.get_user(uid=uid)
     assert user is not None
