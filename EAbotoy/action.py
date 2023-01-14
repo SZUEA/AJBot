@@ -7,17 +7,20 @@ import threading
 import time
 import traceback
 import uuid
+from io import BytesIO
 from typing import List, Optional, Union, Callable
 
 import httpx
+import requests
+from PIL import Image
 
 from EAbotoy import macro
 from EAbotoy.config import jconfig
 from EAbotoy.log import logger
 from EAbotoy.model import EventMsg, WeChatMsg
-from EAbotoy.parser import event as eventParser
 
 from . import utils
+from .contrib import get_cache_dir
 
 
 class _Task:
@@ -242,6 +245,46 @@ class Action:
             arg,
         )
 
+    def uploadIMGByCDN(
+            self,
+
+            toUserName: str,
+            path: str = "",
+            imageUrl: str = "",
+            type: str = 'jpg'
+    ):
+        """发送图片消息"""
+        assert any([imageUrl, path]), "缺少参数"
+        arg = {
+            "ToUserName": toUserName,
+            "MediaType": "2"
+        }
+
+        if path != '':
+            arg["FilePath"] = path
+            return self._post(
+                "UploadIMGByCDN",
+                arg,
+                use_queue=False
+            )
+        try:
+            res = requests.get(imageUrl)
+            image = Image.open(BytesIO(res.content))
+            if image.mode == "P":
+                image = image.convert('RGB')
+
+            _path = get_cache_dir("cache_img") / f"{toUserName}-{random.randint(1, 10000)}.{type}"
+            image.save(_path)
+        except Exception as e:
+            print(e)
+            return None
+        arg['FilePath'] = str(_path)
+        return self._post(
+            "UploadIMGByCDN",
+            arg,
+            use_queue=False
+        )
+
     ############################################################################
     def revokeMsg(
             self,
@@ -338,6 +381,7 @@ class Action:
             payload: dict,
             params: Optional[dict] = None,
             path: str = "/v1/LuaApiCaller",
+            use_queue: bool = True,
     ) -> Union[dict, None]:
         """封装常用的post操作"""
         job = functools.partial(
@@ -345,7 +389,7 @@ class Action:
             "POST", funcname=funcname, path=path, payload=payload, params=params
         )
         functools.update_wrapper(job, self._baseRequest)
-        if self._use_queue:
+        if self._use_queue and use_queue:
             _send_thread.put_task(
                 _Task(target=job))
             return None

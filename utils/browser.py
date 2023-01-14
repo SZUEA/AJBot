@@ -1,13 +1,18 @@
 import asyncio
 import os
+import re
 import sys
+from pathlib import Path
 from typing import Optional
 
 from EAbotoy import logger
 from playwright.__main__ import main
 from playwright.async_api import Browser, async_playwright
 
+from utils.fonts_provider import fill_font
+
 browser: Optional[Browser] = None
+mobile_js = Path(__file__).parent.joinpath("mobile.js")
 
 
 async def init_browser(proxy=None, **kwargs) -> Browser:
@@ -47,22 +52,28 @@ async def get_dynamic_screenshot_mobile(dynamic_id):
         viewport={"width": 360, "height": 780},
     )
     try:
+        await page.route(re.compile("^https://static.graiax/fonts/(.+)$"), fill_font)
         await page.goto(url, wait_until="networkidle", timeout=10000)
         # 动态被删除或者进审核了
         if page.url == "https://m.bilibili.com/404":
             return None
-        await page.add_script_tag(
-            content=
-            # 去除打开app按钮
-            "document.getElementsByClassName('m-dynamic-float-openapp').forEach(v=>v.remove());"
-            # 去除关注按钮
-            "document.getElementsByClassName('dyn-header__following').forEach(v=>v.remove());"
-            # 修复字体与换行问题
-            "const dyn=document.getElementsByClassName('dyn-card')[0];"
-            "dyn.style.fontFamily='Noto Sans CJK SC, sans-serif';"
-            "dyn.style.overflowWrap='break-word'"
-        )
-        card = await page.query_selector(".dyn-card")
+
+        await page.add_script_tag(path=mobile_js)
+
+        await page.evaluate("setFont()")
+        await page.wait_for_function("getMobileStyle()")
+
+        await page.wait_for_load_state("networkidle")
+        await page.wait_for_load_state("domcontentloaded")
+
+        await page.wait_for_timeout(200)
+
+        # 判断字体是否加载完成
+        need_wait = ["imageComplete", "fontsLoaded"]
+        await asyncio.gather(*[page.wait_for_function(f"{i}()") for i in need_wait])
+
+        card = await page.query_selector(".opus-modules" if "opus" in page.url else ".dyn-card")
+
         assert card
         clip = await card.bounding_box()
         assert clip

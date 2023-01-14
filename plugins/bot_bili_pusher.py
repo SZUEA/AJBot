@@ -42,6 +42,9 @@ def send_img(group, imageUrl):
     action.sendImg(group, imageBase64=base)
 
 
+last_dy = ""
+
+
 async def dy_sched_up(uid: int):
     user = await db.get_user(uid=uid)
     assert user is not None
@@ -144,12 +147,19 @@ async def dy_sched():
     await browser.close()
 
 
+last_video = ""
+
+
 async def check_up_video(uid):
     video = API.get_latest_video_by_mid(uid)
     if video is None:
         return
     sub_db = sub_DB()
     if sub_db.judge_up_updated(uid, video.created):
+        global last_video
+        if last_video == video.bvid:
+            return
+        last_video = video.bvid
         for group in sub_db.get_gids_by_up_mid(uid):
             action.sendApp(group,
                            '<appmsg appid="wxcb8d4298c6a09bcb" sdkver="0">\n\t\t'
