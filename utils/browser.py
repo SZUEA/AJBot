@@ -53,7 +53,7 @@ async def get_dynamic_screenshot_mobile(dynamic_id):
     )
     try:
         await page.route(re.compile("^https://static.graiax/fonts/(.+)$"), fill_font)
-        await page.goto(url, wait_until="networkidle", timeout=10000)
+        await page.goto(url, wait_until="networkidle", timeout=50)
         # 动态被删除或者进审核了
         if page.url == "https://m.bilibili.com/404":
             return None
