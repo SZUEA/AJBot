@@ -148,7 +148,7 @@ function setFont(font = "", fontSource = "local") {
         } else {
             const needLoadFont = needLoadFontList.reduce((defaultString, fontObject) => defaultString + fontObject.fontFamily + ",", "");
             appDom.style.fontFamily = needLoadFont + emojiFont + ",sans-serif";
-        };
+        }
         appDom.style.overflowWrap = "break-word";
     }
 
