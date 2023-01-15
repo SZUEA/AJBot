@@ -49,7 +49,7 @@ async def get_dynamic_screenshot_mobile(dynamic_id):
             "Mozilla/5.0 (Linux; Android 10; RMX1911) AppleWebKit/537.36 "
             "(KHTML, like Gecko) Chrome/100.0.4896.127 Mobile Safari/537.36"
         ),
-        viewport={"width": 360, "height": 780},
+        viewport={"width": 460, "height": 780},
     )
     try:
         await page.route(re.compile("^https://static.graiax/fonts/(.+)$"), fill_font)
@@ -66,7 +66,7 @@ async def get_dynamic_screenshot_mobile(dynamic_id):
         await page.wait_for_load_state("networkidle")
         await page.wait_for_load_state("domcontentloaded")
 
-        await page.wait_for_timeout(200)
+        await page.wait_for_timeout(100)
 
         # 判断字体是否加载完成
         need_wait = ["imageComplete", "fontsLoaded"]
