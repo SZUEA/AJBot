@@ -32,7 +32,7 @@ class DB:
         )
         self.con.commit()
 
-    def subscribe_blog(self, gid: str, name: str, url: str) -> bool:
+    def subscribe_blog(self, name: str, gid: str, url: str) -> bool:
         """返回False表示已经订阅过了"""
         self.cur.execute(f"SELECT * FROM blog_subscribed WHERE gid='{gid}' AND url='{url}'")
         if self.cur.fetchall():
@@ -99,7 +99,7 @@ class API:
     @classmethod
     def get_latest_blog_by_url(cls, url: str) -> Optional[Blog]:
         try:
-            feed = feedparser.parse('https://blog.hz2016.com/feed/')
+            feed = feedparser.parse(url)
             if feed['bozo'] == False and len(feed['entries']) > 1:
                 feed = feed.entries[0]
                 return Blog(title=feed.title, author=feed.author, url=feed.link, description=clean_html(feed.summary),
@@ -189,5 +189,5 @@ def run_scheduler():
     logger.info("FEED订阅抓取完毕")
 
 
-scheduler.add_job(run_scheduler, "interval", minutes=30)
+scheduler.add_job(run_scheduler, "interval", minutes=10)
 run_scheduler()
