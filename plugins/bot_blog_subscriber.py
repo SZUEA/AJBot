@@ -62,6 +62,10 @@ class DB:
         self.cur.execute(f"SELECT * FROM blog_subscribed WHERE url='{url}'")
         return [ret[1] for ret in self.cur.fetchall()]
 
+    def get_name_by_url_url_gid(self, url: str, gid: str) -> str:
+        self.cur.execute(f"SELECT name FROM blog_subscribed WHERE url='{url}' and gid='{gid}'")
+        return self.cur.fetchall()[0][0]
+
     def judge_blog_updated(self, url: str, created: int) -> bool:
         """如果更新了则返回True，并更新数据"""
         self.cur.execute(f"SELECT * FROM blog_feed_data WHERE url='{url}'")
@@ -102,7 +106,12 @@ class API:
             feed = feedparser.parse(url)
             if feed['bozo'] == False and len(feed['entries']) > 1:
                 feed = feed.entries[0]
-                return Blog(title=feed.title, author=feed.author, url=feed.link, description=clean_html(feed.summary),
+                try:
+                    blog_author = feed.author
+                except Exception:
+                    blog_author = 'None'
+
+                return Blog(title=feed.title, author=blog_author, url=feed.link, description=clean_html(feed.summary),
                             created=time.mktime(feed.updated_parsed))
         except Exception:
             logger.warning(traceback.format_exc())
@@ -166,10 +175,14 @@ async def check_blog():
                         #    group,
                         #    imageUrl=video.pic,
                         # )
+                        if blog.author == 'None':
+                            author = db.get_name_by_url_url_gid(url, group)
+                        else:
+                            author = blog.author
                         action.sendApp(group,
                                        '<appmsg appid="" sdkver="0">\n\t\t'
                                        f'<title>{blog.title}</title>\n\t\t'
-                                       f'<des>{blog.author}：{blog.description}</des>\n\t\t'
+                                       f'<des>{author}：{blog.description + "...更多内容请移步订阅源"}</des>\n\t\t'
                                        '<username />\n\t\t<action>view</action>\n\t\t'
                                        '<type>5</type>\n\t\t'
                                        '<showtype>0</showtype>\n\t\t'
