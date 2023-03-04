@@ -2,6 +2,7 @@
 博客订阅+FEED_URL
 """
 import base64, requests, re, sqlite3, traceback, feedparser, os, time, asyncio
+import socket
 from io import BytesIO
 from typing import List, Optional
 from pydantic import BaseModel
@@ -13,7 +14,7 @@ from EAbotoy.schedule import scheduler
 from plugins.bot_reply import is_bot_master
 
 action = Action(os.environ["wxid"])
-
+socket.setdefaulttimeout(60)
 # white_groups = ['18803656716@chatroom']
 DB_PATH = get_cache_dir("blog_feed_subscriber") / "db.sqlite3"
 
@@ -200,7 +201,5 @@ def run_scheduler():
     loop.run_until_complete(check_blog())
     loop.close()
     logger.info("FEED订阅抓取完毕")
-
-
 scheduler.add_job(run_scheduler, "interval", minutes=10)
 run_scheduler()
