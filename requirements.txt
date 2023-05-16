@@ -12,3 +12,14 @@ tortoise-orm
 playwright
 tinyrecord
 tinydb
+loguru
+python-socketio
+prettytable
+apscheduler
+packaging
+yarl
+feedparser
+ujson
+regex
+arrow
+websocket-client
