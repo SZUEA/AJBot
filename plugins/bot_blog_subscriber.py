@@ -13,6 +13,10 @@ from EAbotoy.model import WeChatMsg
 from EAbotoy.schedule import scheduler
 from plugins.bot_reply import is_bot_master
 
+import ssl
+
+ssl._create_default_https_context = ssl._create_unverified_context
+
 action = Action(os.environ["wxid"])
 socket.setdefaulttimeout(60)
 # white_groups = ['18803656716@chatroom']
@@ -201,5 +205,7 @@ def run_scheduler():
     loop.run_until_complete(check_blog())
     loop.close()
     logger.info("FEED订阅抓取完毕")
+
+
 scheduler.add_job(run_scheduler, "interval", minutes=10)
 run_scheduler()
